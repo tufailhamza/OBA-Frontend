@@ -1,13 +1,37 @@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { 
   Search, 
   Bell, 
-  Settings
+  Settings,
+  LogOut,
+  User
 } from "lucide-react"
+import { useAuth } from "@/contexts/AuthContext"
+import { useToast } from "@/hooks/use-toast"
 
 export function Header() {
+  const { user, logout } = useAuth()
+  const { toast } = useToast()
+
+  const handleLogout = async () => {
+    try {
+      await logout()
+      toast({
+        title: "Success",
+        description: "Successfully signed out!",
+      })
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to sign out. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
+
   return (
     <header className="bg-card border-b border-border px-6 py-4 shadow-card">
       <div className="flex items-center justify-between">
@@ -35,7 +59,7 @@ export function Header() {
             />
           </div>
 
-          {/* Action Buttons */}
+          {/* User Profile and Actions */}
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm" className="relative">
               <Bell className="h-4 w-4" />
@@ -46,6 +70,30 @@ export function Header() {
             <Button variant="ghost" size="sm">
               <Settings className="h-4 w-4" />
             </Button>
+            
+            {/* User Avatar and Logout */}
+            {user && (
+              <div className="flex items-center gap-2 ml-2 pl-2 border-l border-border">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={user.photoURL || undefined} alt={user.displayName || 'User'} />
+                  <AvatarFallback>
+                    <User className="h-4 w-4" />
+                  </AvatarFallback>
+                </Avatar>
+                <div className="hidden md:block">
+                  <p className="text-sm font-medium">{user.displayName || 'User'}</p>
+                  <p className="text-xs text-muted-foreground">{user.email}</p>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={handleLogout}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>

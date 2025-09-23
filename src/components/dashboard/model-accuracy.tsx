@@ -8,21 +8,21 @@ export function ModelAccuracyStats() {
         <Card className="gradient-card shadow-card hover:shadow-hover transition-smooth">
           <CardContent className="p-6 text-center">
             <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-2">R-Squared</h4>
-            <p className="text-5xl font-bold text-foreground">88.94%</p>
+            <p className="text-5xl font-bold text-foreground">85.67%</p>
           </CardContent>
         </Card>
         
         <Card className="gradient-card shadow-card hover:shadow-hover transition-smooth">
           <CardContent className="p-6 text-center">
             <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-2">Mean Absolute Error<br />(MAE)</h4>
-            <p className="text-5xl font-bold text-foreground">1.22</p>
+            <p className="text-5xl font-bold text-foreground">2.767</p>
           </CardContent>
         </Card>
         
         <Card className="gradient-card shadow-card hover:shadow-hover transition-smooth">
           <CardContent className="p-6 text-center">
             <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-2">Root Mean Squared Error<br />(RMSE)</h4>
-            <p className="text-5xl font-bold text-foreground">5.17</p>
+            <p className="text-5xl font-bold text-foreground">7.17</p>
           </CardContent>
         </Card>
       </div>

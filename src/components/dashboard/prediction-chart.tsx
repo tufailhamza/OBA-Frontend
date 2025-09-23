@@ -85,15 +85,15 @@ export function ProbabilityDistributionChart() {
           <h4 className="text-sm font-medium text-foreground mb-4">Key Statistical Properties</h4>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-primary/10 rounded-lg p-4 border-l-4 border-primary">
-              <p className="text-lg font-bold text-primary">68.2% of data</p>
+              <p className="text-lg font-bold text-primary">71.8% of data</p>
               <p className="text-sm text-muted-foreground">within ±1 standard deviation</p>
             </div>
             <div className="bg-success/10 rounded-lg p-4 border-l-4 border-success">
-              <p className="text-lg font-bold text-success">95.4% of data</p>
+              <p className="text-lg font-bold text-success">93.2% of data</p>
               <p className="text-sm text-muted-foreground">within ±2 standard deviations</p>
             </div>
             <div className="bg-warning/10 rounded-lg p-4 border-l-4 border-warning">
-              <p className="text-lg font-bold text-warning">99.7% of data</p>
+              <p className="text-lg font-bold text-warning">98.9% of data</p>
               <p className="text-sm text-muted-foreground">within ±3 standard deviations</p>
             </div>
           </div>

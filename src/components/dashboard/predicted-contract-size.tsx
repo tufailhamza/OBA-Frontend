@@ -1,0 +1,112 @@
+import { useEffect, useState } from "react"
+import { Card, CardContent } from "@/components/ui/card"
+import { searchByContractSizePlanId, type ContractSizeSearchResponse } from "@/services/api"
+import { useToast } from "@/hooks/use-toast"
+import { Loader2 } from "lucide-react"
+
+interface PredictedContractSizeProps {
+  planId?: string;
+}
+
+export function PredictedContractSize({ planId }: PredictedContractSizeProps) {
+  const [data, setData] = useState<ContractSizeSearchResponse | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const { toast } = useToast()
+
+  console.log("PredictedContractSize rendered with planId:", planId)
+
+  useEffect(() => {
+    if (!planId) return
+
+    const fetchPrediction = async () => {
+      setLoading(true)
+      setError(null)
+      console.log("PredictedContractSize: Fetching data for planId:", planId)
+      try {
+        const result = await searchByContractSizePlanId(planId)
+        console.log("PredictedContractSize: API result:", result)
+        setData(result)
+      } catch (err) {
+        console.error("PredictedContractSize: API error:", err)
+        setError(err instanceof Error ? err.message : 'Failed to fetch prediction')
+        toast({
+          title: "Error",
+          description: "Failed to fetch contract size prediction",
+          variant: "destructive"
+        })
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchPrediction()
+  }, [planId, toast])
+
+  if (!planId) {
+    return (
+      <Card className="gradient-card shadow-card hover:shadow-hover transition-smooth mb-6">
+        <CardContent className="p-8 text-center">
+          <h3 className="text-lg font-medium text-muted-foreground uppercase tracking-wide mb-4">Predicted Contract Size</h3>
+          <div className="space-y-2">
+            <p className="text-2xl text-muted-foreground">Enter a Plan ID to get predictions</p>
+            <p className="text-sm text-muted-foreground">Use the search box above to analyze contract size</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (loading) {
+    return (
+      <Card className="gradient-card shadow-card hover:shadow-hover transition-smooth mb-6">
+        <CardContent className="p-8 text-center">
+          <div className="flex items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin" />
+            <span className="ml-2">Loading prediction...</span>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (error || !data?.found || !data.contract_size_predictions || data.contract_size_predictions.length === 0) {
+    return (
+      <Card className="gradient-card shadow-card hover:shadow-hover transition-smooth mb-6">
+        <CardContent className="p-8 text-center">
+          <h3 className="text-lg font-medium text-muted-foreground uppercase tracking-wide mb-4">Predicted Contract Size</h3>
+          <div className="space-y-2">
+            <p className="text-2xl text-muted-foreground">No prediction available</p>
+            <p className="text-sm text-muted-foreground">Unable to load contract size prediction</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  const prediction = data.contract_size_predictions[0]
+  
+  // Format contract size as millions
+  const formatAsMillions = (value: number) => {
+    if (value >= 1000000) {
+      return `$${(value / 1000000).toFixed(1)}M`
+    } else if (value >= 1000) {
+      return `$${(value / 1000).toFixed(0)}K`
+    } else {
+      return `$${value.toLocaleString()}`
+    }
+  }
+
+  return (
+    <Card className="gradient-card shadow-card hover:shadow-hover transition-smooth mb-6">
+      <CardContent className="p-8 text-center">
+        <h3 className="text-lg font-medium text-muted-foreground uppercase tracking-wide mb-4">Predicted Contract Size</h3>
+        <div className="space-y-2">
+          <p className="text-7xl font-bold text-foreground">
+            {prediction?.predicted_contract_size ? formatAsMillions(prediction.predicted_contract_size) : 'N/A'}
+          </p>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}

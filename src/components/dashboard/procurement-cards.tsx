@@ -1,39 +1,178 @@
 import { Card, CardContent } from "@/components/ui/card"
+import { useState, useEffect } from "react"
+import { searchByPlanId, type PlanIdSearchResponse } from "@/services/api"
+import { useToast } from "@/hooks/use-toast"
+import { Loader2 } from "lucide-react"
 
-export function ProcurementInfoCards() {
+interface ProcurementInfoCardsProps {
+  planId?: string
+}
+
+export function ProcurementInfoCards({ planId }: ProcurementInfoCardsProps) {
+  const [data, setData] = useState<PlanIdSearchResponse | null>(null)
+  const [loading, setLoading] = useState(false)
+  const { toast } = useToast()
+
+  console.log("ProcurementInfoCards rendered with planId:", planId)
+
+  useEffect(() => {
+    if (!planId) return
+
+    const fetchData = async () => {
+      setLoading(true)
+      console.log("Fetching data for planId:", planId)
+      try {
+        const result = await searchByPlanId(planId)
+        console.log("API result:", result)
+        setData(result)
+      } catch (err) {
+        console.error("API error:", err)
+        toast({
+          title: "Error",
+          description: "Failed to fetch procurement data",
+          variant: "destructive"
+        })
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [planId, toast])
+
+  const record = data?.records[0]
+
+  if (!planId) {
+    return (
+      <div className="flex items-center justify-center h-48 bg-muted/20 rounded-lg border-2 border-dashed border-muted-foreground/25 mb-6">
+        <div className="text-center space-y-2">
+          <p className="text-lg font-medium text-muted-foreground">Enter a Plan ID to view procurement details</p>
+          <p className="text-sm text-muted-foreground">Use the search box above to get started</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
       <div className="bg-primary/10 rounded-lg p-6 border-l-4 border-primary h-[160px] flex flex-col justify-start">
         <p className="text-lg font-bold text-primary">Plan ID</p>
-        <p className="text-xl text-muted-foreground">FY25NCFB15</p>
+        <p className="text-xl text-muted-foreground">{loading ? 'Loading...' : (record?.PlanID || 'N/A')}</p>
       </div>
       
       <div className="bg-success/10 rounded-lg p-6 border-l-4 border-success h-[160px] flex flex-col justify-start">
         <p className="text-lg font-bold text-success">Project Description</p>
-        <p className="text-xl text-muted-foreground">Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum</p>
+        <p className="text-xl text-muted-foreground line-clamp-4 overflow-hidden">{loading ? 'Loading...' : (record?.Services_Description || 'No description available')}</p>
       </div>
       
       <div className="bg-accent/10 rounded-lg p-6 border-l-4 border-accent h-[160px] flex flex-col justify-start">
         <p className="text-lg font-bold text-accent">Issuing Agency</p>
-        <p className="text-xl text-muted-foreground">Department of Parks & Recreation</p>
+        <p className="text-xl text-muted-foreground">{loading ? 'Loading...' : (record?.Agency || 'N/A')}</p>
       </div>
       
       <div className="bg-warning/10 rounded-lg p-6 border-l-4 border-warning h-[160px] flex flex-col justify-start">
-        <p className="text-lg font-bold text-warning">Procurement Approach</p>
-        <p className="text-xl text-muted-foreground">Negotiated Acquisition</p>
+        <p className="text-lg font-bold text-warning">Procurement Method</p>
+        <p className="text-xl text-muted-foreground">{loading ? 'Loading...' : (record?.Procurement_Method || 'N/A')}</p>
       </div>
     </div>
   )
 }
 
-export function PredictedTenderDate() {
+interface PredictedTenderDateProps {
+  planId?: string
+}
+
+export function PredictedTenderDate({ planId }: PredictedTenderDateProps) {
+  const [data, setData] = useState<PlanIdSearchResponse | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const { toast } = useToast()
+
+  console.log("PredictedTenderDate rendered with planId:", planId)
+
+  useEffect(() => {
+    if (!planId) return
+
+    const fetchPrediction = async () => {
+      setLoading(true)
+      setError(null)
+      console.log("PredictedTenderDate: Fetching data for planId:", planId)
+      try {
+        const result = await searchByPlanId(planId)
+        console.log("PredictedTenderDate: API result:", result)
+        setData(result)
+      } catch (err) {
+        console.error("PredictedTenderDate: API error:", err)
+        setError(err instanceof Error ? err.message : 'Failed to fetch prediction')
+        toast({
+          title: "Error",
+          description: "Failed to fetch tender date prediction",
+          variant: "destructive"
+        })
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchPrediction()
+  }, [planId, toast])
+
+  if (!planId) {
+    return (
+      <Card className="gradient-card shadow-card hover:shadow-hover transition-smooth mb-6">
+        <CardContent className="p-8 text-center">
+          <h3 className="text-lg font-medium text-muted-foreground uppercase tracking-wide mb-4">Predicted Tender Date</h3>
+          <div className="space-y-2">
+            <p className="text-2xl text-muted-foreground">Enter a Plan ID to get predictions</p>
+            <p className="text-sm text-muted-foreground">Use the search box above to analyze contract timing</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (loading) {
+    return (
+      <Card className="gradient-card shadow-card hover:shadow-hover transition-smooth mb-6">
+        <CardContent className="p-8 text-center">
+          <div className="flex items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin" />
+            <span className="ml-2">Loading prediction...</span>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (error || !data?.found) {
+    return (
+      <Card className="gradient-card shadow-card hover:shadow-hover transition-smooth mb-6">
+        <CardContent className="p-8 text-center">
+          <h3 className="text-lg font-medium text-muted-foreground uppercase tracking-wide mb-4">Predicted Tender Date</h3>
+          <div className="space-y-2">
+            <p className="text-2xl text-muted-foreground">No prediction available</p>
+            <p className="text-sm text-muted-foreground">Unable to load tender date prediction</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  const prediction = data.predictions[0]
+  const currentYear = new Date().getFullYear()
+
   return (
     <Card className="gradient-card shadow-card hover:shadow-hover transition-smooth mb-6">
       <CardContent className="p-8 text-center">
         <h3 className="text-lg font-medium text-muted-foreground uppercase tracking-wide mb-4">Predicted Tender Date</h3>
         <div className="space-y-2">
-          <p className="text-7xl font-bold text-foreground">March</p>
-          <p className="text-4xl text-muted-foreground">2026</p>
+          <p className="text-7xl font-bold text-foreground">{prediction?.predicted_month_name || 'N/A'}</p>
+          <p className="text-4xl text-muted-foreground">{currentYear}</p>
+          {prediction?.confidence && prediction.confidence !== 'N/A' && (
+            <p className="text-sm text-muted-foreground mt-2">
+              Confidence: {prediction.confidence}
+            </p>
+          )}
         </div>
       </CardContent>
     </Card>

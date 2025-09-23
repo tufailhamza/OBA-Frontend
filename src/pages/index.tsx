@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { Header } from "../components/dashboard/headers"
 import { Filters } from "@/components/dashboard/filters"
 import { Discovery } from "@/components/dashboard/discovery"
@@ -7,14 +8,31 @@ import { ModelAccuracyStats } from "@/components/dashboard/model-accuracy"
 import { AgencyAnalysis } from "@/components/dashboard/agency-analysis"
 import { CompetitorAnalysis } from "@/components/dashboard/competitor-analysis"
 import { ContractSize } from "@/components/dashboard/contract-size"
+import { PlanIdInput } from "@/components/dashboard/plan-id-input"
+import { ContractSizeProcurementCards } from "@/components/dashboard/contract-size-procurement-cards"
+import { PredictedContractSize } from "@/components/dashboard/predicted-contract-size"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { type ProcurementSearchFilters } from "@/services/api"
 
 const Index = () => {
+  const [searchFilters, setSearchFilters] = useState<ProcurementSearchFilters | undefined>(undefined)
+  const [selectedPlanId, setSelectedPlanId] = useState<string | undefined>(undefined)
+
+  const handleSearch = (filters: ProcurementSearchFilters) => {
+    setSearchFilters(filters)
+  }
+
+  const handlePlanIdSubmit = (planId: string) => {
+    console.log("Index: Received planId:", planId)
+    setSelectedPlanId(planId)
+    console.log("Index: Setting selectedPlanId to:", planId)
+  }
+
   return (
     <div className="min-h-screen bg-background flex">
       {/* Search Filters Sidebar */}
       <div className="w-[365px] p-6 border-r border-border">
-        <Filters />
+        <Filters onSearch={handleSearch} />
       </div>
       
       {/* Main Content */}
@@ -33,27 +51,18 @@ const Index = () => {
             </TabsList>
             
             <TabsContent value="discovery" className="space-y-6 mt-6">
-              <Discovery />
+              <Discovery searchFilters={searchFilters} />
             </TabsContent>
             
             <TabsContent value="contract-timing" className="space-y-6 mt-6">
-              <div className="space-y-6">
-                {/* Page Title */}
-                <div className="mb-6">
-                  <h1 className="text-3xl font-bold text-foreground">Procurement Tendering Prediction</h1>
-                </div>
-                
-                {/* Procurement Info Cards */}
-                <ProcurementInfoCards />
-                
-                {/* Predicted Tender Date */}
-                <PredictedTenderDate />
-                
-                {/* Probability Distribution Chart */}
-                <ProbabilityDistributionChart />
-                
-                {/* Model Accuracy Statistics */}
-                <ModelAccuracyStats />
+              <PlanIdInput onPlanIdSubmit={handlePlanIdSubmit} />
+              <ProcurementInfoCards planId={selectedPlanId} />
+              <PredictedTenderDate planId={selectedPlanId} />
+              <ProbabilityDistributionChart />
+              <ModelAccuracyStats />
+              {/* Debug info */}
+              <div className="text-xs text-muted-foreground">
+                Debug: selectedPlanId = {selectedPlanId || 'undefined'}
               </div>
             </TabsContent>
             
@@ -62,11 +71,18 @@ const Index = () => {
             </TabsContent>
             
             <TabsContent value="contract-size" className="space-y-6 mt-6">
-              <ContractSize />
+              <ContractSizeProcurementCards planId={selectedPlanId} />
+              <PredictedContractSize planId={selectedPlanId} />
+              <ProbabilityDistributionChart />
+              <ModelAccuracyStats />
+              {/* Debug info */}
+              <div className="text-xs text-muted-foreground">
+                Debug: selectedPlanId = {selectedPlanId || 'undefined'}
+              </div>
             </TabsContent>
             
             <TabsContent value="competitor-analysis" className="space-y-6 mt-6">
-              <CompetitorAnalysis />
+              <CompetitorAnalysis planId={selectedPlanId} />
             </TabsContent>
           </Tabs>
         </main>
