@@ -114,4 +114,3 @@ export function ContractSizePlanIdInput({ onPlanIdSubmit }: ContractSizePlanIdIn
     </Card>
   )
 }
-

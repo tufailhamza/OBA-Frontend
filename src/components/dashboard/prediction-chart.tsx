@@ -89,11 +89,11 @@ export function ProbabilityDistributionChart() {
               <p className="text-sm text-muted-foreground">within ±1 standard deviation</p>
             </div>
             <div className="bg-success/10 rounded-lg p-4 border-l-4 border-success">
-              <p className="text-lg font-bold text-success">93.2% of data</p>
+              <p className="text-lg font-bold text-success">89.2% of data</p>
               <p className="text-sm text-muted-foreground">within ±2 standard deviations</p>
             </div>
             <div className="bg-warning/10 rounded-lg p-4 border-l-4 border-warning">
-              <p className="text-lg font-bold text-warning">98.9% of data</p>
+              <p className="text-lg font-bold text-warning">94.9% of data</p>
               <p className="text-sm text-muted-foreground">within ±3 standard deviations</p>
             </div>
           </div>

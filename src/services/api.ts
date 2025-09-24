@@ -1,5 +1,6 @@
-const API_BASE_URL = 'http://localhost:8000';
 import { apiCache } from '@/lib/api-cache';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 export interface ProcurementSearchFilters {
   keyword?: string;
@@ -283,6 +284,36 @@ export interface CompetitorAnalysisSearchResponse {
   search_message: string;
 }
 
+export interface AgencyAnalysisSearchResponse {
+  agency: string;
+  total_budget: number;
+  total_count: number;
+  avg_contract_size: number;
+  avg_confidence: number;
+  categories: Array<{
+    category_name: string;
+    total_budget: number;
+    total_count: number;
+    budget_percentage: number;
+    subcategories: Array<{
+      subcategory_name: string;
+      count: number;
+      percentage: number;
+      total_budget: number;
+      budget_percentage: number;
+      avg_contract_size: number;
+      avg_confidence: number;
+    }>;
+  }>;
+  summary: {
+    total_categories: number;
+    total_subcategories: number;
+    largest_category: string;
+    largest_category_budget: number;
+    largest_category_percentage: number;
+  };
+}
+
 export const searchByPlanId = async (planId: string): Promise<PlanIdSearchResponse> => {
   const cacheKey = `plan-id-${planId}`;
   
@@ -431,6 +462,43 @@ export const searchByCompetitorPlanId = async (planId: string): Promise<Competit
     return data;
   } catch (error) {
     console.error("Competitor Analysis fetch error:", error);
+    throw error;
+  }
+};
+
+export const searchByAgencyName = async (agencyName: string): Promise<AgencyAnalysisSearchResponse> => {
+  const cacheKey = `agency-analysis-${agencyName}`;
+  
+  // Check cache first
+  const cachedData = apiCache.get<AgencyAnalysisSearchResponse>(cacheKey);
+  if (cachedData) {
+    console.log("Using cached agency analysis data for agency:", agencyName);
+    return cachedData;
+  }
+
+  console.log("Making API request to:", `${API_BASE_URL}/api/v1/agency-analysis/${encodeURIComponent(agencyName)}`);
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/agency-analysis/${encodeURIComponent(agencyName)}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("Agency Analysis API response:", data);
+    
+    // Cache the data
+    apiCache.set(cacheKey, data);
+    
+    return data;
+  } catch (error) {
+    console.error("Agency Analysis fetch error:", error);
     throw error;
   }
 };

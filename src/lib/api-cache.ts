@@ -38,4 +38,3 @@ class APICache {
 }
 
 export const apiCache = new APICache();
-

@@ -29,10 +29,10 @@ export function PredictedContractSize({ planId }: PredictedContractSizeProps) {
         setData(result)
       } catch (err) {
         console.error("PredictedContractSize: API error:", err)
-        setError(err instanceof Error ? err.message : 'Failed to fetch prediction')
+        setError('Contract Size API is currently unavailable. Please check backend status.')
         toast({
-          title: "Error",
-          description: "Failed to fetch contract size prediction",
+          title: "Contract Size API Unavailable",
+          description: "The contract size prediction service is currently down. Please try again later.",
           variant: "destructive"
         })
       } finally {

@@ -12,20 +12,33 @@ import { PlanIdInput } from "@/components/dashboard/plan-id-input"
 import { ContractSizeProcurementCards } from "@/components/dashboard/contract-size-procurement-cards"
 import { PredictedContractSize } from "@/components/dashboard/predicted-contract-size"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { type ProcurementSearchFilters } from "@/services/api"
+import { type ProcurementSearchFilters, searchByPlanId } from "@/services/api"
 
 const Index = () => {
   const [searchFilters, setSearchFilters] = useState<ProcurementSearchFilters | undefined>(undefined)
   const [selectedPlanId, setSelectedPlanId] = useState<string | undefined>(undefined)
+  const [selectedAgencyName, setSelectedAgencyName] = useState<string | undefined>(undefined)
 
   const handleSearch = (filters: ProcurementSearchFilters) => {
     setSearchFilters(filters)
   }
 
-  const handlePlanIdSubmit = (planId: string) => {
+  const handlePlanIdSubmit = async (planId: string) => {
     console.log("Index: Received planId:", planId)
     setSelectedPlanId(planId)
     console.log("Index: Setting selectedPlanId to:", planId)
+    
+    // Fetch the agency name from the Contract Timing API response
+    try {
+      const response = await searchByPlanId(planId)
+      if (response.records && response.records.length > 0) {
+        const agencyName = response.records[0].Agency
+        setSelectedAgencyName(agencyName)
+        console.log("Index: Setting selectedAgencyName to:", agencyName)
+      }
+    } catch (error) {
+      console.error("Failed to fetch agency name:", error)
+    }
   }
 
   return (
@@ -62,12 +75,12 @@ const Index = () => {
               <ModelAccuracyStats />
               {/* Debug info */}
               <div className="text-xs text-muted-foreground">
-                Debug: selectedPlanId = {selectedPlanId || 'undefined'}
+                Debug: selectedPlanId = {selectedPlanId || 'undefined'}, selectedAgencyName = {selectedAgencyName || 'undefined'}
               </div>
             </TabsContent>
             
             <TabsContent value="agency-analysis" className="space-y-6 mt-6">
-              <AgencyAnalysis />
+              <AgencyAnalysis agencyName={selectedAgencyName} />
             </TabsContent>
             
             <TabsContent value="contract-size" className="space-y-6 mt-6">
