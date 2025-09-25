@@ -314,6 +314,16 @@ export interface AgencyAnalysisSearchResponse {
   };
 }
 
+export interface AgencyAnalysisErrorResponse {
+  agency: string;
+  total_budget: number;
+  total_count: number;
+  error: string;
+  categories: Array<any>;
+}
+
+export type AgencyAnalysisResponse = AgencyAnalysisSearchResponse | AgencyAnalysisErrorResponse;
+
 export const searchByPlanId = async (planId: string): Promise<PlanIdSearchResponse> => {
   const cacheKey = `plan-id-${planId}`;
   
@@ -466,11 +476,11 @@ export const searchByCompetitorPlanId = async (planId: string): Promise<Competit
   }
 };
 
-export const searchByAgencyName = async (agencyName: string): Promise<AgencyAnalysisSearchResponse> => {
+export const searchByAgencyName = async (agencyName: string): Promise<AgencyAnalysisResponse> => {
   const cacheKey = `agency-analysis-${agencyName}`;
   
   // Check cache first
-  const cachedData = apiCache.get<AgencyAnalysisSearchResponse>(cacheKey);
+  const cachedData = apiCache.get<AgencyAnalysisResponse>(cacheKey);
   if (cachedData) {
     console.log("Using cached agency analysis data for agency:", agencyName);
     return cachedData;

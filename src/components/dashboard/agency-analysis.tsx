@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { searchByAgencyName, type AgencyAnalysisSearchResponse } from "@/services/api"
+import { searchByAgencyName, type AgencyAnalysisResponse } from "@/services/api"
 
 interface AgencyAnalysisProps {
   agencyName?: string;
@@ -19,7 +19,7 @@ const formatPercentage = (percentage: number): string => {
 }
 
 export function AgencyAnalysis({ agencyName }: AgencyAnalysisProps) {
-  const [data, setData] = useState<AgencyAnalysisSearchResponse | null>(null);
+  const [data, setData] = useState<AgencyAnalysisResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -102,6 +102,42 @@ export function AgencyAnalysis({ agencyName }: AgencyAnalysisProps) {
   // Show data when available
   if (!data) {
     return null;
+  }
+
+  // Check if the response contains an error (when no data is found)
+  if ('error' in data) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center space-y-4">
+          <div className="w-16 h-16 mx-auto bg-muted/50 rounded-full flex items-center justify-center">
+            <span className="text-2xl">📊</span>
+          </div>
+          <div className="space-y-2">
+            <h3 className="text-lg font-semibold text-foreground">No Data Available</h3>
+            <p className="text-sm text-muted-foreground max-w-md">
+              {data.error || `No agency analysis data found for ${agencyName}.`}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if we have valid data structure
+  if (!data.categories || !data.summary) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center space-y-4">
+          <div className="w-16 h-16 mx-auto bg-destructive/10 rounded-full flex items-center justify-center">
+            <span className="text-2xl">⚠️</span>
+          </div>
+          <div className="space-y-2">
+            <h3 className="text-lg font-semibold text-foreground">Invalid Data Structure</h3>
+            <p className="text-sm text-muted-foreground">The API response doesn't contain the expected data structure.</p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
