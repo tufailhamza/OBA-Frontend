@@ -158,21 +158,31 @@ export function PredictedTenderDate({ planId }: PredictedTenderDateProps) {
     )
   }
 
-  const prediction = data.predictions[0]
-  const currentYear = new Date().getFullYear()
+  const prediction = data.procurement_date_predictions[0]
+  
+  // Format the predicted date to show month and year
+  const formatPredictedDate = (dateString: string) => {
+    if (!dateString) return 'N/A'
+    const date = new Date(dateString)
+    const monthNames = ["January", "February", "March", "April", "May", "June", 
+                       "July", "August", "September", "October", "November", "December"]
+    return monthNames[date.getMonth()]
+  }
+
+  const formatPredictedYear = (dateString: string) => {
+    if (!dateString) return new Date().getFullYear()
+    const date = new Date(dateString)
+    return date.getFullYear()
+  }
 
   return (
     <Card className="gradient-card shadow-card hover:shadow-hover transition-smooth mb-6">
       <CardContent className="p-8 text-center">
         <h3 className="text-lg font-medium text-muted-foreground uppercase tracking-wide mb-4">Predicted Tender Date</h3>
         <div className="space-y-2">
-          <p className="text-7xl font-bold text-foreground">{prediction?.predicted_month_name || 'N/A'}</p>
-          <p className="text-4xl text-muted-foreground">{currentYear}</p>
-          {prediction?.confidence && prediction.confidence !== 'N/A' && (
-            <p className="text-sm text-muted-foreground mt-2">
-              Confidence: {prediction.confidence}
-            </p>
-          )}
+          <p className="text-7xl font-bold text-foreground">{formatPredictedDate(prediction?.predicted_date) || 'N/A'}</p>
+          <p className="text-4xl text-muted-foreground">{formatPredictedYear(prediction?.predicted_date)}</p>
+         
         </div>
       </CardContent>
     </Card>

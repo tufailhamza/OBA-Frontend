@@ -133,7 +133,7 @@ export default function ProcurementAnalysis() {
   const sizeRecord = contractSizeData?.records[0]
   const competitorRecord = competitorData?.records[0]
   const contractSizePrediction = contractSizeData?.contract_size_predictions[0]
-  const timingPrediction = contractTimingData?.predictions[0]
+  const timingPrediction = contractTimingData?.procurement_date_predictions[0]
   const vendorPrediction = competitorData?.vendor_predictions[0]
 
   // Format contract size as millions
@@ -244,8 +244,23 @@ export default function ProcurementAnalysis() {
           <CardContent className="p-8 text-center">
             <h3 className="text-lg font-medium text-muted-foreground uppercase tracking-wide mb-4">Predicted Tender Date</h3>
             <div className="space-y-2">
-              <p className="text-7xl font-bold text-foreground">{timingPrediction?.predicted_month_name || 'N/A'}</p>
-              <p className="text-4xl text-muted-foreground">{new Date().getFullYear()}</p>
+              <p className="text-7xl font-bold text-foreground">
+                {timingPrediction?.predicted_date 
+                  ? new Date(timingPrediction.predicted_date).toLocaleDateString('en-US', { month: 'long' })
+                  : 'N/A'
+                }
+              </p>
+              <p className="text-4xl text-muted-foreground">
+                {timingPrediction?.predicted_date 
+                  ? new Date(timingPrediction.predicted_date).getFullYear()
+                  : new Date().getFullYear()
+                }
+              </p>
+              {timingPrediction?.confidence_score && (
+                <p className="text-sm text-muted-foreground mt-2">
+                  Confidence: {(timingPrediction.confidence_score * 100).toFixed(0)}%
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>

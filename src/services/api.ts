@@ -209,14 +209,15 @@ export interface PlanIdSearchResponse {
   plan_id: string;
   found: boolean;
   records: ProcurementRecord[];
-  predictions: Array<{
-    predicted_month: number;
-    predicted_month_name: string;
-    confidence: string;
-    input_data: any;
+  procurement_date_predictions: Array<{
+    success: boolean;
+    predicted_date: string;
+    days_to_award: number;
+    confidence_score: number;
+    plan_id: string;
+    fiscal_year: string;
   }>;
   total_records: number;
-  search_message: string;
 }
 
 export interface ContractSizeSearchResponse {
@@ -334,7 +335,7 @@ export const searchByPlanId = async (planId: string): Promise<PlanIdSearchRespon
     return cachedData;
   }
 
-  console.log("Making API request to:", `${API_BASE_URL}/api/v1/procurement/search-by-plan-id`);
+  console.log("Making API request to:", `${API_BASE_URL}/api/v1/procurement-date/search-by-plan-id`);
   console.log("Request body:", JSON.stringify({ plan_id: planId }));
   
   // First, let's test if we can reach the backend at all
@@ -349,7 +350,7 @@ export const searchByPlanId = async (planId: string): Promise<PlanIdSearchRespon
   }
   
   try {
-    const response = await fetch(`${API_BASE_URL}/api/v1/procurement/search-by-plan-id`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/procurement-date/search-by-plan-id`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ plan_id: planId }),
