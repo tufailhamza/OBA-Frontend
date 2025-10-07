@@ -248,7 +248,7 @@ export function Discovery({ searchFilters }: { searchFilters?: ProcurementSearch
             </div>
           ) : (
             <div className="overflow-x-auto">
-          <Table>
+          <Table className="table-fixed w-full">
             <TableHeader>
               <TableRow>
                 <TableHead className="w-12">
@@ -257,16 +257,16 @@ export function Discovery({ searchFilters }: { searchFilters?: ProcurementSearch
                     onCheckedChange={handleSelectAll}
                   />
                 </TableHead>
-                    <TableHead className="w-32">Plan ID</TableHead>
-                    <TableHead className="w-24">Agency</TableHead>
-                    <TableHead className="min-w-64">Services Description</TableHead>
-                    <TableHead className="w-24">Start Date</TableHead>
-                    <TableHead className="w-24">End Date</TableHead>
-                    <TableHead className="w-32">Procurement Method</TableHead>
-                    <TableHead className="w-20">Fiscal Quarter</TableHead>
-                    <TableHead className="min-w-48">Job Titles</TableHead>
-                    <TableHead className="w-20">Head Count</TableHead>
-                    <TableHead className="w-24">Data Source</TableHead>
+                    <TableHead className="font-sans text-sm w-32 min-w-32">Plan ID</TableHead>
+                    <TableHead className="font-sans text-sm w-24 min-w-24">Agency</TableHead>
+                    <TableHead className="font-sans text-sm w-64 min-w-64">Services Description</TableHead>
+                    <TableHead className="font-sans text-sm w-24 min-w-24">Start Date</TableHead>
+                    <TableHead className="font-sans text-sm w-24 min-w-24">End Date</TableHead>
+                    <TableHead className="font-sans text-sm w-32 min-w-32">Procurement Method</TableHead>
+                    <TableHead className="font-sans text-sm w-20 min-w-20">Fiscal Quarter</TableHead>
+                    <TableHead className="font-sans text-sm w-48 min-w-48">Job Titles</TableHead>
+                    <TableHead className="font-sans text-sm w-20 min-w-20">Head Count</TableHead>
+                    <TableHead className="font-sans text-sm w-24 min-w-24">Data Source</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -289,20 +289,20 @@ export function Discovery({ searchFilters }: { searchFilters?: ProcurementSearch
                             onCheckedChange={(checked) => handleSelectRow(item.ID, checked as boolean)}
                     />
                   </TableCell>
-                        <TableCell className="font-mono text-sm">{item.PlanID}</TableCell>
-                        <TableCell>{item.Agency}</TableCell>
-                        <TableCell className="max-w-64 truncate" title={item.Services_Description || 'N/A'}>
+                        <TableCell className="font-sans text-sm">{item.PlanID}</TableCell>
+                        <TableCell className="font-sans text-sm">{item.Agency}</TableCell>
+                        <TableCell className="font-sans text-sm" title={item.Services_Description || 'N/A'}>
                           {item.Services_Description || 'N/A'}
                         </TableCell>
-                        <TableCell>{item.Start_Date || 'N/A'}</TableCell>
-                        <TableCell>{item.End_Date || 'N/A'}</TableCell>
-                        <TableCell className="text-sm">{item.Procurement_Method || 'N/A'}</TableCell>
-                        <TableCell>{item.Fiscal_Quarter || 'N/A'}</TableCell>
-                        <TableCell className="max-w-48 truncate" title={item.Job_Titles || 'N/A'}>
+                        <TableCell className="font-sans text-sm">{item.Start_Date || 'N/A'}</TableCell>
+                        <TableCell className="font-sans text-sm">{item.End_Date || 'N/A'}</TableCell>
+                        <TableCell className="font-sans text-sm">{item.Procurement_Method || 'N/A'}</TableCell>
+                        <TableCell className="font-sans text-sm">{item.Fiscal_Quarter || 'N/A'}</TableCell>
+                        <TableCell className="font-sans text-sm" title={item.Job_Titles || 'N/A'}>
                           {item.Job_Titles || 'N/A'}
                         </TableCell>
-                        <TableCell className="text-center">{item.Head_Count || 'N/A'}</TableCell>
-                        <TableCell className="font-mono text-xs">{item.Data_Source}</TableCell>
+                        <TableCell className="font-sans text-sm text-center">{item.Head_Count || 'N/A'}</TableCell>
+                        <TableCell className="font-sans text-sm">{item.Data_Source}</TableCell>
                 </TableRow>
                     ))
                   )}
@@ -343,7 +343,7 @@ export function Discovery({ searchFilters }: { searchFilters?: ProcurementSearch
             <h3 className="text-lg font-semibold text-foreground">User Selected Records:</h3>
             <Card>
               <div className="overflow-x-auto">
-                <Table>
+                <Table className="table-fixed w-full">
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-12">
@@ -352,16 +352,16 @@ export function Discovery({ searchFilters }: { searchFilters?: ProcurementSearch
                           onCheckedChange={handleSelectAll}
                         />
                       </TableHead>
-                      <TableHead className="w-32">Plan ID</TableHead>
-                      <TableHead className="w-24">Agency</TableHead>
-                      <TableHead className="min-w-64">Services Description</TableHead>
-                      <TableHead className="w-24">Start Date</TableHead>
-                      <TableHead className="w-24">End Date</TableHead>
-                      <TableHead className="w-32">Procurement Method</TableHead>
-                      <TableHead className="w-20">Fiscal Quarter</TableHead>
-                      <TableHead className="min-w-48">Job Titles</TableHead>
-                      <TableHead className="w-20">Head Count</TableHead>
-                      <TableHead className="w-24">Data Source</TableHead>
+                      <TableHead className="font-sans text-sm w-32 min-w-32">Plan ID</TableHead>
+                      <TableHead className="font-sans text-sm w-24 min-w-24">Agency</TableHead>
+                      <TableHead className="font-sans text-sm w-64 min-w-64">Services Description</TableHead>
+                      <TableHead className="font-sans text-sm w-24 min-w-24">Start Date</TableHead>
+                      <TableHead className="font-sans text-sm w-24 min-w-24">End Date</TableHead>
+                      <TableHead className="font-sans text-sm w-32 min-w-32">Procurement Method</TableHead>
+                      <TableHead className="font-sans text-sm w-20 min-w-20">Fiscal Quarter</TableHead>
+                      <TableHead className="font-sans text-sm w-48 min-w-48">Job Titles</TableHead>
+                      <TableHead className="font-sans text-sm w-20 min-w-20">Head Count</TableHead>
+                      <TableHead className="font-sans text-sm w-24 min-w-24">Data Source</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -375,20 +375,20 @@ export function Discovery({ searchFilters }: { searchFilters?: ProcurementSearch
                               onCheckedChange={(checked) => handleSelectRow(item.ID, checked as boolean)}
                             />
                           </TableCell>
-                          <TableCell className="font-mono text-sm">{item.PlanID}</TableCell>
-                          <TableCell>{item.Agency}</TableCell>
-                          <TableCell className="max-w-64 truncate" title={item.Services_Description || 'N/A'}>
+                          <TableCell className="font-sans text-sm">{item.PlanID}</TableCell>
+                          <TableCell className="font-sans text-sm">{item.Agency}</TableCell>
+                          <TableCell className="font-sans text-sm" title={item.Services_Description || 'N/A'}>
                             {item.Services_Description || 'N/A'}
                           </TableCell>
-                          <TableCell>{item.Start_Date || 'N/A'}</TableCell>
-                          <TableCell>{item.End_Date || 'N/A'}</TableCell>
-                          <TableCell className="text-sm">{item.Procurement_Method || 'N/A'}</TableCell>
-                          <TableCell>{item.Fiscal_Quarter || 'N/A'}</TableCell>
-                          <TableCell className="max-w-48 truncate" title={item.Job_Titles || 'N/A'}>
+                          <TableCell className="font-sans text-sm">{item.Start_Date || 'N/A'}</TableCell>
+                          <TableCell className="font-sans text-sm">{item.End_Date || 'N/A'}</TableCell>
+                          <TableCell className="font-sans text-sm">{item.Procurement_Method || 'N/A'}</TableCell>
+                          <TableCell className="font-sans text-sm">{item.Fiscal_Quarter || 'N/A'}</TableCell>
+                          <TableCell className="font-sans text-sm" title={item.Job_Titles || 'N/A'}>
                             {item.Job_Titles || 'N/A'}
                           </TableCell>
-                          <TableCell className="text-center">{item.Head_Count || 'N/A'}</TableCell>
-                          <TableCell className="font-mono text-xs">{item.Data_Source}</TableCell>
+                          <TableCell className="font-sans text-sm text-center">{item.Head_Count || 'N/A'}</TableCell>
+                          <TableCell className="font-sans text-sm">{item.Data_Source}</TableCell>
                         </TableRow>
                       ))}
                   </TableBody>
@@ -420,20 +420,20 @@ export function Discovery({ searchFilters }: { searchFilters?: ProcurementSearch
             </div>
           ) : (
             <div className="overflow-x-auto">
-          <Table>
+          <Table className="table-fixed w-full">
             <TableHeader>
               <TableRow>
-                 <TableHead className="text-xs">Agency</TableHead>
-                 <TableHead className="text-xs">Title</TableHead>
-                 <TableHead className="text-xs">Award Date</TableHead>
-                 <TableHead className="text-xs">Description</TableHead>
-                 <TableHead className="text-xs">Category</TableHead>
-                 <TableHead className="text-xs">Agency Division</TableHead>
-                 <TableHead className="text-xs">Notice Type</TableHead>
-                 <TableHead className="text-xs">Contact Info</TableHead>
-                 <TableHead className="text-xs">Selection Method</TableHead>
-                 <TableHead className="text-xs">Vendor Info</TableHead>
-                 <TableHead className="text-xs">Status</TableHead>
+                 <TableHead className="font-sans text-sm w-24 min-w-24">Agency</TableHead>
+                 <TableHead className="font-sans text-sm w-32 min-w-32">Title</TableHead>
+                 <TableHead className="font-sans text-sm w-24 min-w-24">Award Date</TableHead>
+                 <TableHead className="font-sans text-sm w-48 min-w-48">Description</TableHead>
+                 <TableHead className="font-sans text-sm w-24 min-w-24">Category</TableHead>
+                 <TableHead className="font-sans text-sm w-32 min-w-32">Agency Division</TableHead>
+                 <TableHead className="font-sans text-sm w-24 min-w-24">Notice Type</TableHead>
+                 <TableHead className="font-sans text-sm w-32 min-w-32">Contact Info</TableHead>
+                 <TableHead className="font-sans text-sm w-24 min-w-24">Selection Method</TableHead>
+                 <TableHead className="font-sans text-sm w-32 min-w-32">Vendor Info</TableHead>
+                 <TableHead className="font-sans text-sm w-20 min-w-20">Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -446,18 +446,18 @@ export function Discovery({ searchFilters }: { searchFilters?: ProcurementSearch
                   ) : (
                     awardData.map((item) => (
                       <TableRow key={item.ID}>
-                         <TableCell className="text-xs max-w-20 truncate" title={item.Agency || 'N/A'}>{item.Agency || 'N/A'}</TableCell>
-                         <TableCell className="text-xs max-w-24 truncate" title={item.Title || 'N/A'}>{item.Title || 'N/A'}</TableCell>
-                         <TableCell className="text-xs">{item.Award_Date || 'N/A'}</TableCell>
-                         <TableCell className="text-xs max-w-20 truncate" title={item.Description || 'N/A'}>{item.Description || 'N/A'}</TableCell>
-                         <TableCell className="text-xs">{item.Category || 'N/A'}</TableCell>
-                         <TableCell className="text-xs max-w-16 truncate" title={item.Agency_Division || 'N/A'}>{item.Agency_Division || 'N/A'}</TableCell>
-                         <TableCell className="text-xs max-w-16 truncate" title={item.Notice_Type || 'N/A'}>{item.Notice_Type || 'N/A'}</TableCell>
-                         <TableCell className="text-xs max-w-20 truncate" title={item.Contact_Information || 'N/A'}>{item.Contact_Information || 'N/A'}</TableCell>
-                         <TableCell className="text-xs max-w-16 truncate" title={item.Selection_Method || 'N/A'}>{item.Selection_Method || 'N/A'}</TableCell>
-                         <TableCell className="text-xs max-w-20 truncate" title={item.Vendor_Information || 'N/A'}>{item.Vendor_Information || 'N/A'}</TableCell>
+                         <TableCell className="font-sans text-sm" title={item.Agency || 'N/A'}>{item.Agency || 'N/A'}</TableCell>
+                         <TableCell className="font-sans text-sm" title={item.Title || 'N/A'}>{item.Title || 'N/A'}</TableCell>
+                         <TableCell className="font-sans text-sm">{item.Award_Date || 'N/A'}</TableCell>
+                         <TableCell className="font-sans text-sm" title={item.Description || 'N/A'}>{item.Description || 'N/A'}</TableCell>
+                         <TableCell className="font-sans text-sm">{item.Category || 'N/A'}</TableCell>
+                         <TableCell className="font-sans text-sm" title={item.Agency_Division || 'N/A'}>{item.Agency_Division || 'N/A'}</TableCell>
+                         <TableCell className="font-sans text-sm" title={item.Notice_Type || 'N/A'}>{item.Notice_Type || 'N/A'}</TableCell>
+                         <TableCell className="font-sans text-sm" title={item.Contact_Information || 'N/A'}>{item.Contact_Information || 'N/A'}</TableCell>
+                         <TableCell className="font-sans text-sm" title={item.Selection_Method || 'N/A'}>{item.Selection_Method || 'N/A'}</TableCell>
+                         <TableCell className="font-sans text-sm" title={item.Vendor_Information || 'N/A'}>{item.Vendor_Information || 'N/A'}</TableCell>
                          <TableCell>
-                          <span className={`px-1 py-0.5 rounded-full text-xs ${
+                          <span className={`px-1 py-0.5 rounded-full font-sans text-sm ${
                             item.Award_Status === 'YES' 
                               ? 'bg-success/10 text-success' 
                               : item.Award_Status === 'NO'
@@ -513,28 +513,28 @@ export function Discovery({ searchFilters }: { searchFilters?: ProcurementSearch
               <Table className="min-w-max">
             <TableHeader>
               <TableRow>
-                    <TableHead className="text-xs w-16">ID</TableHead>
-                    <TableHead className="text-xs w-20">Fiscal Year</TableHead>
-                    <TableHead className="text-xs w-24">Plan ID</TableHead>
-                    <TableHead className="text-xs w-24">Agency</TableHead>
-                    <TableHead className="text-xs w-40">Services Description</TableHead>
-                    <TableHead className="text-xs w-24">Start Date</TableHead>
-                    <TableHead className="text-xs w-24">End Date</TableHead>
-                    <TableHead className="text-xs w-32">Procurement Method</TableHead>
-                    <TableHead className="text-xs w-24">Fiscal Quarter</TableHead>
-                    <TableHead className="text-xs w-32">Job Titles</TableHead>
-                    <TableHead className="text-xs w-20">Head Count</TableHead>
-                    <TableHead className="text-xs w-24">Data Source</TableHead>
-                    <TableHead className="text-xs w-24">Source</TableHead>
-                    <TableHead className="text-xs w-40">Title</TableHead>
-                    <TableHead className="text-xs w-24">Award Date</TableHead>
-                    <TableHead className="text-xs w-40">Description</TableHead>
-                    <TableHead className="text-xs w-24">Category</TableHead>
-                    <TableHead className="text-xs w-32">Agency Division</TableHead>
-                    <TableHead className="text-xs w-24">Notice Type</TableHead>
-                    <TableHead className="text-xs w-40">Contact Information</TableHead>
-                    <TableHead className="text-xs w-32">Selection Method</TableHead>
-                    <TableHead className="text-xs w-40">Vendor Information</TableHead>
+                    <TableHead className="font-sans text-sm w-16">ID</TableHead>
+                    <TableHead className="font-sans text-sm w-20">Fiscal Year</TableHead>
+                    <TableHead className="font-sans text-sm w-24">Plan ID</TableHead>
+                    <TableHead className="font-sans text-sm w-24">Agency</TableHead>
+                    <TableHead className="font-sans text-sm w-40">Services Description</TableHead>
+                    <TableHead className="font-sans text-sm w-24">Start Date</TableHead>
+                    <TableHead className="font-sans text-sm w-24">End Date</TableHead>
+                    <TableHead className="font-sans text-sm w-32">Procurement Method</TableHead>
+                    <TableHead className="font-sans text-sm w-24">Fiscal Quarter</TableHead>
+                    <TableHead className="font-sans text-sm w-32">Job Titles</TableHead>
+                    <TableHead className="font-sans text-sm w-20">Head Count</TableHead>
+                    <TableHead className="font-sans text-sm w-24">Data Source</TableHead>
+                    <TableHead className="font-sans text-sm w-24">Source</TableHead>
+                    <TableHead className="font-sans text-sm w-40">Title</TableHead>
+                    <TableHead className="font-sans text-sm w-24">Award Date</TableHead>
+                    <TableHead className="font-sans text-sm w-40">Description</TableHead>
+                    <TableHead className="font-sans text-sm w-24">Category</TableHead>
+                    <TableHead className="font-sans text-sm w-32">Agency Division</TableHead>
+                    <TableHead className="font-sans text-sm w-24">Notice Type</TableHead>
+                    <TableHead className="font-sans text-sm w-40">Contact Information</TableHead>
+                    <TableHead className="font-sans text-sm w-32">Selection Method</TableHead>
+                    <TableHead className="font-sans text-sm w-40">Vendor Information</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -543,57 +543,57 @@ export function Discovery({ searchFilters }: { searchFilters?: ProcurementSearch
                     .filter(item => selectedRows.includes(item.ID))
                     .map((item) => (
                       <TableRow key={`proc-${item.ID}`}>
-                        <TableCell className="text-xs">{item.ID || 'N/A'}</TableCell>
-                        <TableCell className="text-xs">{item.Fiscal_Year || 'N/A'}</TableCell>
-                        <TableCell className="text-xs font-mono">{item.PlanID || 'N/A'}</TableCell>
-                        <TableCell className="text-xs max-w-20 truncate" title={item.Agency || 'N/A'}>{item.Agency || 'N/A'}</TableCell>
-                        <TableCell className="text-xs max-w-20 truncate" title={item.Services_Description || 'N/A'}>{item.Services_Description || 'N/A'}</TableCell>
-                        <TableCell className="text-xs">{item.Start_Date || 'N/A'}</TableCell>
-                        <TableCell className="text-xs">{item.End_Date || 'N/A'}</TableCell>
-                        <TableCell className="text-xs max-w-16 truncate" title={item.Procurement_Method || 'N/A'}>{item.Procurement_Method || 'N/A'}</TableCell>
-                        <TableCell className="text-xs">{item.Fiscal_Quarter || 'N/A'}</TableCell>
-                        <TableCell className="text-xs max-w-20 truncate" title={item.Job_Titles || 'N/A'}>{item.Job_Titles || 'N/A'}</TableCell>
-                        <TableCell className="text-xs">{item.Head_Count || 'N/A'}</TableCell>
-                        <TableCell className="text-xs">{item.Data_Source || 'N/A'}</TableCell>
-                        <TableCell className="text-xs bg-blue-50">Procurement</TableCell>
-                        <TableCell className="text-xs">N/A</TableCell>
-                        <TableCell className="text-xs">N/A</TableCell>
-                        <TableCell className="text-xs">N/A</TableCell>
-                        <TableCell className="text-xs">N/A</TableCell>
-                        <TableCell className="text-xs">N/A</TableCell>
-                        <TableCell className="text-xs">N/A</TableCell>
-                        <TableCell className="text-xs">N/A</TableCell>
-                        <TableCell className="text-xs">N/A</TableCell>
-                        <TableCell className="text-xs">N/A</TableCell>
-                        <TableCell className="text-xs">N/A</TableCell>
+                        <TableCell className="font-sans text-sm">{item.ID || 'N/A'}</TableCell>
+                        <TableCell className="font-sans text-sm">{item.Fiscal_Year || 'N/A'}</TableCell>
+                        <TableCell className="font-sans text-sm">{item.PlanID || 'N/A'}</TableCell>
+                        <TableCell className="font-sans text-sm max-w-20 truncate" title={item.Agency || 'N/A'}>{item.Agency || 'N/A'}</TableCell>
+                        <TableCell className="font-sans text-sm max-w-20 truncate" title={item.Services_Description || 'N/A'}>{item.Services_Description || 'N/A'}</TableCell>
+                        <TableCell className="font-sans text-sm">{item.Start_Date || 'N/A'}</TableCell>
+                        <TableCell className="font-sans text-sm">{item.End_Date || 'N/A'}</TableCell>
+                        <TableCell className="font-sans text-sm max-w-16 truncate" title={item.Procurement_Method || 'N/A'}>{item.Procurement_Method || 'N/A'}</TableCell>
+                        <TableCell className="font-sans text-sm">{item.Fiscal_Quarter || 'N/A'}</TableCell>
+                        <TableCell className="font-sans text-sm max-w-20 truncate" title={item.Job_Titles || 'N/A'}>{item.Job_Titles || 'N/A'}</TableCell>
+                        <TableCell className="font-sans text-sm">{item.Head_Count || 'N/A'}</TableCell>
+                        <TableCell className="font-sans text-sm">{item.Data_Source || 'N/A'}</TableCell>
+                        <TableCell className="font-sans text-sm bg-blue-50">Procurement</TableCell>
+                        <TableCell className="font-sans text-sm">N/A</TableCell>
+                        <TableCell className="font-sans text-sm">N/A</TableCell>
+                        <TableCell className="font-sans text-sm">N/A</TableCell>
+                        <TableCell className="font-sans text-sm">N/A</TableCell>
+                        <TableCell className="font-sans text-sm">N/A</TableCell>
+                        <TableCell className="font-sans text-sm">N/A</TableCell>
+                        <TableCell className="font-sans text-sm">N/A</TableCell>
+                        <TableCell className="font-sans text-sm">N/A</TableCell>
+                        <TableCell className="font-sans text-sm">N/A</TableCell>
+                        <TableCell className="font-sans text-sm">N/A</TableCell>
                       </TableRow>
                     ))}
                   
                   {/* All Awards Records */}
                   {awardData.map((item) => (
                     <TableRow key={`award-${item.ID}`}>
-                      <TableCell className="text-xs">N/A</TableCell>
-                      <TableCell className="text-xs">N/A</TableCell>
-                      <TableCell className="text-xs">N/A</TableCell>
-                      <TableCell className="text-xs max-w-20 truncate" title={item.Agency || 'N/A'}>{item.Agency || 'N/A'}</TableCell>
-                      <TableCell className="text-xs">N/A</TableCell>
-                      <TableCell className="text-xs">N/A</TableCell>
-                      <TableCell className="text-xs">N/A</TableCell>
-                      <TableCell className="text-xs">N/A</TableCell>
-                      <TableCell className="text-xs">N/A</TableCell>
-                      <TableCell className="text-xs">N/A</TableCell>
-                      <TableCell className="text-xs">N/A</TableCell>
-                      <TableCell className="text-xs">N/A</TableCell>
-                      <TableCell className="text-xs bg-green-50">Awards</TableCell>
-                      <TableCell className="text-xs max-w-20 truncate" title={item.Title || 'N/A'}>{item.Title || 'N/A'}</TableCell>
-                      <TableCell className="text-xs">{item.Award_Date || 'N/A'}</TableCell>
-                      <TableCell className="text-xs max-w-20 truncate" title={item.Description || 'N/A'}>{item.Description || 'N/A'}</TableCell>
-                      <TableCell className="text-xs">{item.Category || 'N/A'}</TableCell>
-                      <TableCell className="text-xs max-w-16 truncate" title={item.Agency_Division || 'N/A'}>{item.Agency_Division || 'N/A'}</TableCell>
-                      <TableCell className="text-xs max-w-16 truncate" title={item.Notice_Type || 'N/A'}>{item.Notice_Type || 'N/A'}</TableCell>
-                      <TableCell className="text-xs max-w-20 truncate" title={item.Contact_Information || 'N/A'}>{item.Contact_Information || 'N/A'}</TableCell>
-                      <TableCell className="text-xs max-w-16 truncate" title={item.Selection_Method || 'N/A'}>{item.Selection_Method || 'N/A'}</TableCell>
-                      <TableCell className="text-xs max-w-20 truncate" title={item.Vendor_Information || 'N/A'}>{item.Vendor_Information || 'N/A'}</TableCell>
+                      <TableCell className="font-sans text-sm">N/A</TableCell>
+                      <TableCell className="font-sans text-sm">N/A</TableCell>
+                      <TableCell className="font-sans text-sm">N/A</TableCell>
+                      <TableCell className="font-sans text-sm max-w-20 truncate" title={item.Agency || 'N/A'}>{item.Agency || 'N/A'}</TableCell>
+                      <TableCell className="font-sans text-sm">N/A</TableCell>
+                      <TableCell className="font-sans text-sm">N/A</TableCell>
+                      <TableCell className="font-sans text-sm">N/A</TableCell>
+                      <TableCell className="font-sans text-sm">N/A</TableCell>
+                      <TableCell className="font-sans text-sm">N/A</TableCell>
+                      <TableCell className="font-sans text-sm">N/A</TableCell>
+                      <TableCell className="font-sans text-sm">N/A</TableCell>
+                      <TableCell className="font-sans text-sm">N/A</TableCell>
+                      <TableCell className="font-sans text-sm bg-green-50">Awards</TableCell>
+                      <TableCell className="font-sans text-sm max-w-20 truncate" title={item.Title || 'N/A'}>{item.Title || 'N/A'}</TableCell>
+                      <TableCell className="font-sans text-sm">{item.Award_Date || 'N/A'}</TableCell>
+                      <TableCell className="font-sans text-sm max-w-20 truncate" title={item.Description || 'N/A'}>{item.Description || 'N/A'}</TableCell>
+                      <TableCell className="font-sans text-sm">{item.Category || 'N/A'}</TableCell>
+                      <TableCell className="font-sans text-sm max-w-16 truncate" title={item.Agency_Division || 'N/A'}>{item.Agency_Division || 'N/A'}</TableCell>
+                      <TableCell className="font-sans text-sm max-w-16 truncate" title={item.Notice_Type || 'N/A'}>{item.Notice_Type || 'N/A'}</TableCell>
+                      <TableCell className="font-sans text-sm max-w-20 truncate" title={item.Contact_Information || 'N/A'}>{item.Contact_Information || 'N/A'}</TableCell>
+                      <TableCell className="font-sans text-sm max-w-16 truncate" title={item.Selection_Method || 'N/A'}>{item.Selection_Method || 'N/A'}</TableCell>
+                      <TableCell className="font-sans text-sm max-w-20 truncate" title={item.Vendor_Information || 'N/A'}>{item.Vendor_Information || 'N/A'}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

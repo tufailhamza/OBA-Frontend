@@ -3,8 +3,10 @@ import { Header } from "../components/dashboard/headers"
 import { Filters } from "@/components/dashboard/filters"
 import { Discovery } from "@/components/dashboard/discovery"
 import { ProcurementInfoCards, PredictedTenderDate } from "@/components/dashboard/procurement-cards"
-import { ProbabilityDistributionChart } from "@/components/dashboard/prediction-chart"
-import { ModelAccuracyStats } from "@/components/dashboard/model-accuracy"
+import { ProbabilityDistributionChartTiming } from "@/components/dashboard/prediction-chart-timing"
+import { ProbabilityDistributionChartSize } from "@/components/dashboard/prediction-chart-size"
+import { ModelAccuracyStatsTiming } from "@/components/dashboard/model-accuracy-timing"
+import { ModelAccuracyStatsSize } from "@/components/dashboard/model-accuracy-size"
 import { AgencyAnalysis } from "@/components/dashboard/agency-analysis"
 import { CompetitorAnalysis } from "@/components/dashboard/competitor-analysis"
 import { ContractSize } from "@/components/dashboard/contract-size"
@@ -71,12 +73,9 @@ const Index = () => {
               <PlanIdInput onPlanIdSubmit={handlePlanIdSubmit} />
               <ProcurementInfoCards planId={selectedPlanId} />
               <PredictedTenderDate planId={selectedPlanId} />
-              <ProbabilityDistributionChart />
-              <ModelAccuracyStats />
-              {/* Debug info */}
-              <div className="text-xs text-muted-foreground">
-                Debug: selectedPlanId = {selectedPlanId || 'undefined'}, selectedAgencyName = {selectedAgencyName || 'undefined'}
-              </div>
+              <ProbabilityDistributionChartTiming planId={selectedPlanId} />
+              <ModelAccuracyStatsTiming />
+             
             </TabsContent>
             
             <TabsContent value="agency-analysis" className="space-y-6 mt-6">
@@ -86,12 +85,9 @@ const Index = () => {
             <TabsContent value="contract-size" className="space-y-6 mt-6">
               <ContractSizeProcurementCards planId={selectedPlanId} />
               <PredictedContractSize planId={selectedPlanId} />
-              <ProbabilityDistributionChart />
-              <ModelAccuracyStats />
-              {/* Debug info */}
-              <div className="text-xs text-muted-foreground">
-                Debug: selectedPlanId = {selectedPlanId || 'undefined'}
-              </div>
+              <ProbabilityDistributionChartSize planId={selectedPlanId} />
+              <ModelAccuracyStatsSize />
+           
             </TabsContent>
             
             <TabsContent value="competitor-analysis" className="space-y-6 mt-6">

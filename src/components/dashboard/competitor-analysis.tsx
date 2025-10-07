@@ -184,83 +184,71 @@ export function CompetitorAnalysis({ planId }: CompetitorAnalysisProps) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {/* Prime Vendor Recommendations */}
-                {vendorPrediction?.prime_vendor_recommendations.map((competitor, index) => {
-                  const randomValue = Math.floor(Math.random() * 50000000) + 10000000 // Random between $10M-$60M
-                  const randomMonthsAgo = Math.floor(Math.random() * 12) + 1 // Random 1-12 months ago
-                  const recentDate = new Date()
-                  recentDate.setMonth(recentDate.getMonth() - randomMonthsAgo)
-                  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-                  const recentContractDate = `${monthNames[recentDate.getMonth()]} ${recentDate.getFullYear()}`
+                {/* Combine and sort all vendor recommendations by probability */}
+                {(() => {
+                  // Combine prime and MWBE vendors with their type
+                  const allVendors = [
+                    ...(vendorPrediction?.prime_vendor_recommendations || []).map(vendor => ({ ...vendor, type: 'prime' })),
+                    ...(vendorPrediction?.mwbe_vendor_recommendations || []).map(vendor => ({ ...vendor, type: 'mwbe' }))
+                  ]
                   
-                  return (
-                    <TableRow key={`prime-${index}`}>
-                      <TableCell className="font-medium">{competitor.vendor}</TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex flex-col items-center gap-2">
-                          <DonutChart percentage={Math.round(competitor.probability)} />
-                          <span className="text-2xl font-bold text-foreground">
-                            {Math.round(competitor.probability)}%
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <span className="text-2xl font-bold text-foreground">
-                          ${(randomValue / 1000000).toFixed(1)}M
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex flex-col items-center gap-1">
-                          <div className="text-lg font-semibold text-foreground">
-                            {recentContractDate}
-                          </div>
-                          <div className="text-sm font-light text-green-600">
-                            {randomMonthsAgo === 1 ? "1 month ago" : `${randomMonthsAgo} months ago`}
-                          </div>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )
-                })}
-
-                {/* MWBE Vendor Recommendations */}
-                {vendorPrediction?.mwbe_vendor_recommendations.map((competitor, index) => {
-                  const randomValue = Math.floor(Math.random() * 30000000) + 5000000 // Random between $5M-$35M
-                  const randomMonthsAgo = Math.floor(Math.random() * 12) + 1 // Random 1-12 months ago
-                  const recentDate = new Date()
-                  recentDate.setMonth(recentDate.getMonth() - randomMonthsAgo)
-                  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-                  const recentContractDate = `${monthNames[recentDate.getMonth()]} ${recentDate.getFullYear()}`
+                  // Sort by probability from highest to lowest
+                  const sortedVendors = allVendors.sort((a, b) => b.probability - a.probability)
                   
-                  return (
-                    <TableRow key={`mwbe-${index}`}>
-                      <TableCell className="font-medium">{competitor.vendor}</TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex flex-col items-center gap-2">
-                          <DonutChart percentage={Math.round(competitor.probability)} />
+                  // Limit to maximum 5 competitors
+                  const topCompetitors = sortedVendors.slice(0, 5)
+                  
+                  // Calculate total probability for normalization
+                  const totalProbability = topCompetitors.reduce((sum, vendor) => sum + vendor.probability, 0)
+                  
+                  // Normalize probabilities to sum to 100%
+                  const normalizedCompetitors = topCompetitors.map(vendor => ({
+                    ...vendor,
+                    normalizedProbability: totalProbability > 0 ? (vendor.probability / totalProbability) * 100 : 0
+                  }))
+                  
+                  return normalizedCompetitors.map((competitor, index) => {
+                    const randomValue = competitor.type === 'prime' 
+                      ? Math.floor(Math.random() * 50000000) + 10000000 // Random between $10M-$60M for prime
+                      : Math.floor(Math.random() * 30000000) + 5000000 // Random between $5M-$35M for MWBE
+                    const randomMonthsAgo = Math.floor(Math.random() * 12) + 1 // Random 1-12 months ago
+                    const recentDate = new Date()
+                    recentDate.setMonth(recentDate.getMonth() - randomMonthsAgo)
+                    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+                    const recentContractDate = `${monthNames[recentDate.getMonth()]} ${recentDate.getFullYear()}`
+                    
+                    return (
+                      <TableRow key={`${competitor.type}-${index}`}>
+                        <TableCell className="font-medium">
+                          {competitor.vendor}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <div className="flex flex-col items-center gap-2">
+                            <DonutChart percentage={Math.round(competitor.normalizedProbability)} />
+                            <span className="text-2xl font-bold text-foreground">
+                              {Math.round(competitor.normalizedProbability)}%
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center">
                           <span className="text-2xl font-bold text-foreground">
-                            {Math.round(competitor.probability)}%
+                            ${(randomValue / 1000000).toFixed(1)}M
                           </span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <span className="text-2xl font-bold text-foreground">
-                          ${(randomValue / 1000000).toFixed(1)}M
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex flex-col items-center gap-1">
-                          <div className="text-lg font-semibold text-foreground">
-                            {recentContractDate}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <div className="flex flex-col items-center gap-1">
+                            <div className="text-lg font-semibold text-foreground">
+                              {recentContractDate}
+                            </div>
+                            <div className="text-sm font-light text-green-600">
+                              {randomMonthsAgo === 1 ? "1 month ago" : `${randomMonthsAgo} months ago`}
+                            </div>
                           </div>
-                          <div className="text-sm font-light text-green-600">
-                            {randomMonthsAgo === 1 ? "1 month ago" : `${randomMonthsAgo} months ago`}
-                          </div>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )
-                })}
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })
+                })()}
               </TableBody>
             </Table>
           </Card>
