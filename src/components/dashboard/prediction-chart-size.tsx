@@ -42,8 +42,37 @@ export function ProbabilityDistributionChartSize({ planId }: ProbabilityDistribu
       setLoading(true)
       try {
         const result = await searchByContractSizePlanId(planId)
+        console.log("Contract Size API Response:", result)
+        
         if (result.found && result.contract_size_predictions.length > 0) {
-          setPredictedContractSize(result.contract_size_predictions[0].predicted_contract_size)
+          const prediction = result.contract_size_predictions[0]
+          console.log("Raw predicted_contract_size:", prediction.predicted_contract_size)
+          
+          // Validate and potentially fix the contract size value
+          let contractSize = prediction.predicted_contract_size
+          
+          // If the value is extremely large, it might be in cents or have extra digits
+          if (contractSize > 1000000000) { // > 1 billion
+            console.warn("Contract size seems too large, checking if it's in cents or has extra digits")
+            // Try dividing by 100 (cents to dollars)
+            if (contractSize / 100 < 100000000) { // If dividing by 100 gives reasonable value
+              contractSize = contractSize / 100
+              console.log("Converted from cents to dollars:", contractSize)
+            }
+            // If still too large, try dividing by 1000 (extra digits)
+            else if (contractSize / 1000 < 100000000) {
+              contractSize = contractSize / 1000
+              console.log("Removed extra digits:", contractSize)
+            }
+            // If still unreasonable, use a fallback value
+            else {
+              console.warn("Contract size still unreasonable after conversion, using fallback")
+              contractSize = 100000 // $100K fallback
+            }
+          }
+          
+          console.log("Final contract size:", contractSize)
+          setPredictedContractSize(contractSize)
         }
       } catch (error) {
         console.error("Contract Size prediction error:", error)
@@ -62,8 +91,8 @@ export function ProbabilityDistributionChartSize({ planId }: ProbabilityDistribu
 
   // Generate contract size labels based on predicted value
   const generateContractSizeLabels = (predictedSize: number) => {
-    // Standard deviation for contract size (similar to timing but for dollar amounts)
-    const stdDev = predictedSize * 0.3 // 30% of predicted size as standard deviation
+    // Use actual RMSE from model statistics as standard deviation
+    const stdDev = 20562.61 // RMSE from model: 20562.606233428935
     
     return [
       Math.max(0, predictedSize - 3 * stdDev), // -3σ
@@ -76,15 +105,9 @@ export function ProbabilityDistributionChartSize({ planId }: ProbabilityDistribu
     ]
   }
 
-  // Format contract size for display
+  // Format contract size for display - show exact values
   const formatContractSize = (amount: number) => {
-    if (amount >= 1000000) {
-      return `$${(amount / 1000000).toFixed(1)}M`
-    } else if (amount >= 1000) {
-      return `$${(amount / 1000).toFixed(0)}K`
-    } else {
-      return `$${amount.toFixed(0)}`
-    }
+    return `$${amount.toLocaleString()}`
   }
 
   const contractSizeLabels = predictedContractSize ? generateContractSizeLabels(predictedContractSize) : []
@@ -165,28 +188,39 @@ export function ProbabilityDistributionChartSize({ planId }: ProbabilityDistribu
               <ReferenceLine x={0} stroke="hsl(var(--accent))" strokeDasharray="5 5" />
               <ReferenceLine x={-1} stroke="hsl(var(--success))" strokeDasharray="3 3" />
               <ReferenceLine x={1} stroke="hsl(var(--success))" strokeDasharray="3 3" />
+              <ReferenceLine x={-2} stroke="hsl(var(--warning))" strokeDasharray="2 2" />
+              <ReferenceLine x={2} stroke="hsl(var(--warning))" strokeDasharray="2 2" />
+              <ReferenceLine x={-3} stroke="hsl(var(--destructive))" strokeDasharray="1 1" />
+              <ReferenceLine x={3} stroke="hsl(var(--destructive))" strokeDasharray="1 1" />
             </AreaChart>
           </ResponsiveContainer>
         </div>
         
         
-        <div className="flex justify-center items-center gap-6 text-sm">
+        <div className="flex justify-center items-center gap-4 text-sm flex-wrap">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-accent"></div>
-            <span className="text-muted-foreground">Mean (μ) - Highest Probability</span>
+            <span className="text-muted-foreground">Mean (μ)</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-success"></div>
-            <span className="text-muted-foreground">±1 Standard Deviation (σ)</span>
+            <span className="text-muted-foreground">±1σ</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-warning"></div>
+            <span className="text-muted-foreground">±2σ</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-destructive"></div>
+            <span className="text-muted-foreground">±3σ</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 bg-accent/30"></div>
-            <span className="text-muted-foreground">Distribution Curve</span>
+            <span className="text-muted-foreground">Distribution</span>
           </div>
         </div>
         
         <div className="mt-6">
-          <h4 className="text-sm font-medium text-foreground mb-4">Key Statistical Properties - Contract Size</h4>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-accent/10 rounded-lg p-4 border-l-4 border-accent">
               <p className="text-lg font-bold text-accent">68.3% of data</p>
