@@ -248,13 +248,7 @@ export function ProbabilityDistributionChartSize({ planId }: ProbabilityDistribu
         
         <div className="mt-6">
           <h4 className="text-sm font-medium text-foreground mb-4">Key Statistical Properties - Contract Size</h4>
-          {predictedContractSize && (
-            <div className="mb-4 p-3 bg-muted/20 rounded-lg">
-              <p className="text-sm text-muted-foreground">
-                <strong>Standard Deviation (σ):</strong> {formatContractSize(predictedContractSize * 400 * 0.15)} (15% of predicted value)
-              </p>
-            </div>
-          )}
+        
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-accent/10 rounded-lg p-4 border-l-4 border-accent">
               <p className="text-lg font-bold text-accent">68.3% of data</p>
