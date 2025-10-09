@@ -241,11 +241,7 @@ export default function ProcurementAnalysis() {
                   : new Date().getFullYear()
                 }
               </p>
-              {timingPrediction?.confidence_score && (
-                <p className="text-sm text-muted-foreground mt-2">
-                  Confidence: {(timingPrediction.confidence_score * 100).toFixed(0)}%
-                </p>
-              )}
+           
             </div>
           </CardContent>
         </Card>
