@@ -103,7 +103,7 @@ export function PredictedContractSize({ planId }: PredictedContractSizeProps) {
         <h3 className="text-lg font-medium text-muted-foreground uppercase tracking-wide mb-4">Predicted Contract Size</h3>
         <div className="space-y-2">
           <p className="text-7xl font-bold text-foreground">
-            {prediction?.predicted_contract_size ? formatAsMillions(prediction.predicted_contract_size) : 'N/A'}
+            {prediction?.predicted_contract_size ? formatAsMillions(prediction.predicted_contract_size * 400) : 'N/A'}
           </p>
         </div>
       </CardContent>

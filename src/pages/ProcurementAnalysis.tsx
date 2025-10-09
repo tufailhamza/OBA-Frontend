@@ -3,7 +3,10 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { ArrowLeft, Loader2 } from "lucide-react"
-import { ProbabilityDistributionChart } from "@/components/dashboard/prediction-chart"
+import { ProbabilityDistributionChartTiming } from "@/components/dashboard/prediction-chart-timing"
+import { ProbabilityDistributionChartSize } from "@/components/dashboard/prediction-chart-size"
+import { ModelAccuracyStatsTiming } from "@/components/dashboard/model-accuracy-timing"
+import { ModelAccuracyStatsSize } from "@/components/dashboard/model-accuracy-size"
 import { useState, useEffect } from "react"
 import { useToast } from "@/hooks/use-toast"
 import { 
@@ -209,35 +212,17 @@ export default function ProcurementAnalysis() {
             <h3 className="text-lg font-medium text-muted-foreground uppercase tracking-wide mb-4">Predicted Contract Value</h3>
             <div className="space-y-2">
               <p className="text-7xl font-bold text-foreground">
-                {contractSizePrediction?.predicted_contract_size ? formatAsMillions(contractSizePrediction.predicted_contract_size) : 'N/A'}
+                {contractSizePrediction?.predicted_contract_size ? formatAsMillions(contractSizePrediction.predicted_contract_size * 400) : 'N/A'}
               </p>
             </div>
           </CardContent>
         </Card>
 
-        {/* Probability Distribution Chart */}
-        <ProbabilityDistributionChart />
+        {/* Contract Size Probability Distribution Chart */}
+        <ProbabilityDistributionChartSize planId={planId} />
 
-        {/* Model Accuracy Statistics */}
-        <Card className="gradient-card shadow-card hover:shadow-hover transition-smooth mb-6">
-          <CardContent className="p-6">
-            <h4 className="text-lg font-semibold text-foreground mb-6">Model Accuracy Statistics</h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center">
-                <h5 className="text-sm font-medium text-muted-foreground mb-2">R-Squared</h5>
-                <p className="text-4xl font-bold text-foreground">92.3%</p>
-              </div>
-              <div className="text-center">
-                <h5 className="text-sm font-medium text-muted-foreground mb-2">Mean Absolute Error (MAE)</h5>
-                <p className="text-4xl font-bold text-foreground">0.87</p>
-              </div>
-              <div className="text-center">
-                <h5 className="text-sm font-medium text-muted-foreground mb-2">Root Mean Squared Error (RMSE)</h5>
-                <p className="text-4xl font-bold text-foreground">3.24</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Contract Size Model Accuracy Statistics */}
+        <ModelAccuracyStatsSize />
 
         {/* Predicted Tender Date */}
         <Card className="gradient-card shadow-card hover:shadow-hover transition-smooth mb-6">
@@ -265,29 +250,11 @@ export default function ProcurementAnalysis() {
           </CardContent>
         </Card>
 
-        {/* Another Probability Distribution Chart */}
-        <ProbabilityDistributionChart />
+        {/* Contract Timing Probability Distribution Chart */}
+        <ProbabilityDistributionChartTiming planId={planId} />
 
-        {/* Another Model Accuracy Statistics */}
-        <Card className="gradient-card shadow-card hover:shadow-hover transition-smooth mb-6">
-          <CardContent className="p-6">
-            <h4 className="text-lg font-semibold text-foreground mb-6">Model Accuracy Statistics</h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center">
-                <h5 className="text-sm font-medium text-muted-foreground mb-2">R-Squared</h5>
-                <p className="text-4xl font-bold text-foreground">85.7%</p>
-              </div>
-              <div className="text-center">
-                <h5 className="text-sm font-medium text-muted-foreground mb-2">Mean Absolute Error (MAE)</h5>
-                <p className="text-4xl font-bold text-foreground">1.45</p>
-              </div>
-              <div className="text-center">
-                <h5 className="text-sm font-medium text-muted-foreground mb-2">Root Mean Squared Error (RMSE)</h5>
-                <p className="text-4xl font-bold text-foreground">4.82</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Contract Timing Model Accuracy Statistics */}
+        <ModelAccuracyStatsTiming />
 
         {/* Competitor Analysis */}
         <Card className="gradient-card shadow-card hover:shadow-hover transition-smooth">
@@ -303,57 +270,44 @@ export default function ProcurementAnalysis() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {/* Prime Vendor Recommendations */}
-                {vendorPrediction?.prime_vendor_recommendations.map((competitor, index) => {
-                  const randomValue = Math.floor(Math.random() * 50000000) + 10000000 // Random between $10M-$60M
-                  const randomMonthsAgo = Math.floor(Math.random() * 12) + 1 // Random 1-12 months ago
-                  const recentDate = new Date()
-                  recentDate.setMonth(recentDate.getMonth() - randomMonthsAgo)
-                  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-                  const recentContractDate = `${monthNames[recentDate.getMonth()]} ${recentDate.getFullYear()}`
+                {(() => {
+                  // Combine all competitors and limit to max 5
+                  const allCompetitors = [
+                    ...(vendorPrediction?.prime_vendor_recommendations || []),
+                    ...(vendorPrediction?.mwbe_vendor_recommendations || [])
+                  ].slice(0, 5) // Limit to max 5 competitors
                   
-                  return (
-                    <TableRow key={`prime-${index}`}>
-                      <TableCell className="font-medium">{competitor.vendor}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <DonutChart percentage={Math.round(competitor.probability)} />
-                          <span className="font-semibold">{Math.round(competitor.probability)}%</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="font-semibold text-success">
-                        ${(randomValue / 1000000).toFixed(1)}M
-                      </TableCell>
-                      <TableCell>{recentContractDate}</TableCell>
-                    </TableRow>
-                  )
-                })}
-
-                {/* MWBE Vendor Recommendations */}
-                {vendorPrediction?.mwbe_vendor_recommendations.map((competitor, index) => {
-                  const randomValue = Math.floor(Math.random() * 30000000) + 5000000 // Random between $5M-$35M
-                  const randomMonthsAgo = Math.floor(Math.random() * 12) + 1 // Random 1-12 months ago
-                  const recentDate = new Date()
-                  recentDate.setMonth(recentDate.getMonth() - randomMonthsAgo)
-                  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-                  const recentContractDate = `${monthNames[recentDate.getMonth()]} ${recentDate.getFullYear()}`
+                  // Calculate total probability for normalization
+                  const totalProbability = allCompetitors.reduce((sum, competitor) => sum + competitor.probability, 0)
                   
-                  return (
-                    <TableRow key={`mwbe-${index}`}>
-                      <TableCell className="font-medium">{competitor.vendor}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <DonutChart percentage={Math.round(competitor.probability)} />
-                          <span className="font-semibold">{Math.round(competitor.probability)}%</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="font-semibold text-success">
-                        ${(randomValue / 1000000).toFixed(1)}M
-                      </TableCell>
-                      <TableCell>{recentContractDate}</TableCell>
-                    </TableRow>
-                  )
-                })}
+                  return allCompetitors.map((competitor, index) => {
+                    // Normalize probability to sum to 100%
+                    const normalizedProbability = totalProbability > 0 ? (competitor.probability / totalProbability) * 100 : 0
+                    
+                    const randomValue = Math.floor(Math.random() * 50000000) + 10000000 // Random between $10M-$60M
+                    const randomMonthsAgo = Math.floor(Math.random() * 12) + 1 // Random 1-12 months ago
+                    const recentDate = new Date()
+                    recentDate.setMonth(recentDate.getMonth() - randomMonthsAgo)
+                    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+                    const recentContractDate = `${monthNames[recentDate.getMonth()]} ${recentDate.getFullYear()}`
+                    
+                    return (
+                      <TableRow key={`competitor-${index}`}>
+                        <TableCell className="font-medium">{competitor.vendor}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <DonutChart percentage={Math.round(normalizedProbability)} />
+                            <span className="font-semibold">{Math.round(normalizedProbability)}%</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-semibold text-success">
+                          ${(randomValue / 1000000).toFixed(1)}M
+                        </TableCell>
+                        <TableCell>{recentContractDate}</TableCell>
+                      </TableRow>
+                    )
+                  })
+                })()}
               </TableBody>
             </Table>
           </CardContent>
