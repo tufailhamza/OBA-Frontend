@@ -139,15 +139,9 @@ export default function ProcurementAnalysis() {
   const timingPrediction = contractTimingData?.procurement_date_predictions[0]
   const vendorPrediction = competitorData?.vendor_predictions[0]
 
-  // Format contract size as millions
-  const formatAsMillions = (value: number) => {
-    if (value >= 1000000) {
-      return `$${(value / 1000000).toFixed(1)}M`
-    } else if (value >= 1000) {
-      return `$${(value / 1000).toFixed(0)}K`
-    } else {
-      return `$${value.toLocaleString()}`
-    }
+  // Contract size is already in millions, format with M suffix
+  const formatContractSize = (value: number) => {
+    return `$${value}M`
   }
 
   if (loading) {
@@ -212,7 +206,7 @@ export default function ProcurementAnalysis() {
             <h3 className="text-lg font-medium text-muted-foreground uppercase tracking-wide mb-4">Predicted Contract Value</h3>
             <div className="space-y-2">
               <p className="text-7xl font-bold text-foreground">
-                {contractSizePrediction?.predicted_contract_size ? formatAsMillions(contractSizePrediction.predicted_contract_size * 400) : 'N/A'}
+                {contractSizePrediction?.predicted_contract_size ? formatContractSize(contractSizePrediction.predicted_contract_size) : 'N/A'}
               </p>
             </div>
           </CardContent>

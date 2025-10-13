@@ -70,30 +70,9 @@ export function ProbabilityDistributionChartSize({ planId }: ProbabilityDistribu
           const prediction = result.contract_size_predictions[0]
           console.log("Raw predicted_contract_size:", prediction.predicted_contract_size)
           
-          // Validate and potentially fix the contract size value
-          let contractSize = prediction.predicted_contract_size
-          
-          // If the value is extremely large, it might be in cents or have extra digits
-          if (contractSize > 1000000000) { // > 1 billion
-            console.warn("Contract size seems too large, checking if it's in cents or has extra digits")
-            // Try dividing by 100 (cents to dollars)
-            if (contractSize / 100 < 100000000) { // If dividing by 100 gives reasonable value
-              contractSize = contractSize / 100
-              console.log("Converted from cents to dollars:", contractSize)
-            }
-            // If still too large, try dividing by 1000 (extra digits)
-            else if (contractSize / 1000 < 100000000) {
-              contractSize = contractSize / 1000
-              console.log("Removed extra digits:", contractSize)
-            }
-            // If still unreasonable, use a fallback value
-            else {
-              console.warn("Contract size still unreasonable after conversion, using fallback")
-              contractSize = 100000 // $100K fallback
-            }
-          }
-          
-          console.log("Final contract size:", contractSize)
+          // Contract size is already in millions, use it directly
+          const contractSize = prediction.predicted_contract_size
+          console.log("Using contract size (in millions):", contractSize)
           setPredictedContractSize(contractSize)
         }
       } catch (error) {
@@ -113,27 +92,26 @@ export function ProbabilityDistributionChartSize({ planId }: ProbabilityDistribu
 
   // Generate contract size labels based on predicted value
   const generateContractSizeLabels = (predictedSize: number) => {
-    // Apply 400x multiplier to match the displayed prediction value
-    const scaledPredictedSize = predictedSize * 400
+    // Contract size is already in millions, use it directly
+    const contractSizeInMillions = predictedSize
     
-    // Use a more realistic standard deviation based on the scaled values
-    // For contract sizes, use 15% of the scaled predicted value as standard deviation
-    const stdDev = scaledPredictedSize * 0.15 // 15% of scaled predicted size
+    // Use 15% of the predicted value as standard deviation
+    const stdDev = contractSizeInMillions * 0.15 // 15% of predicted size
     
     return [
-      Math.max(0, scaledPredictedSize - 3 * stdDev), // -3σ
-      Math.max(0, scaledPredictedSize - 2 * stdDev), // -2σ
-      Math.max(0, scaledPredictedSize - 1 * stdDev), // -1σ
-      scaledPredictedSize, // μ (mean)
-      scaledPredictedSize + 1 * stdDev, // +1σ
-      scaledPredictedSize + 2 * stdDev, // +2σ
-      scaledPredictedSize + 3 * stdDev  // +3σ
+      Math.max(0, contractSizeInMillions - 3 * stdDev), // -3σ
+      Math.max(0, contractSizeInMillions - 2 * stdDev), // -2σ
+      Math.max(0, contractSizeInMillions - 1 * stdDev), // -1σ
+      contractSizeInMillions, // μ (mean)
+      contractSizeInMillions + 1 * stdDev, // +1σ
+      contractSizeInMillions + 2 * stdDev, // +2σ
+      contractSizeInMillions + 3 * stdDev  // +3σ
     ]
   }
 
-  // Format contract size for display - show exact values
+  // Format contract size for display - show values in millions
   const formatContractSize = (amount: number) => {
-    return `$${amount.toLocaleString()}`
+    return `$${amount.toFixed(1)}M`
   }
 
   const contractSizeLabels = predictedContractSize ? generateContractSizeLabels(predictedContractSize) : []

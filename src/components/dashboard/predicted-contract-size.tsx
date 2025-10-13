@@ -85,17 +85,6 @@ export function PredictedContractSize({ planId }: PredictedContractSizeProps) {
   }
 
   const prediction = data.contract_size_predictions[0]
-  
-  // Format contract size as millions
-  const formatAsMillions = (value: number) => {
-    if (value >= 1000000) {
-      return `$${(value / 1000000).toFixed(1)}M`
-    } else if (value >= 1000) {
-      return `$${(value / 1000).toFixed(0)}K`
-    } else {
-      return `$${value.toLocaleString()}`
-    }
-  }
 
   return (
     <Card className="gradient-card shadow-card hover:shadow-hover transition-smooth mb-6">
@@ -103,7 +92,7 @@ export function PredictedContractSize({ planId }: PredictedContractSizeProps) {
         <h3 className="text-lg font-medium text-muted-foreground uppercase tracking-wide mb-4">Predicted Contract Size</h3>
         <div className="space-y-2">
           <p className="text-7xl font-bold text-foreground">
-            {prediction?.predicted_contract_size ? formatAsMillions(prediction.predicted_contract_size * 400) : 'N/A'}
+            {prediction?.predicted_contract_size ? `$${prediction.predicted_contract_size}M` : 'N/A'}
           </p>
         </div>
       </CardContent>
