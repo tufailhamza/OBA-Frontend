@@ -64,7 +64,7 @@ function DonutChart({ percentage }: { percentage: number }) {
           cy="25"
           r={radius}
           stroke="hsl(var(--muted))"
-          strokeWidth="4"
+          strokeWidth="6"
           fill="transparent"
         />
         <circle
@@ -72,7 +72,7 @@ function DonutChart({ percentage }: { percentage: number }) {
           cy="25"
           r={radius}
           stroke="hsl(var(--primary))"
-          strokeWidth="4"
+          strokeWidth="6"
           fill="transparent"
           strokeDasharray={strokeDasharray}
           strokeDashoffset={strokeDashoffset}
@@ -254,25 +254,27 @@ export default function ProcurementAnalysis() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Competitor Name</TableHead>
-                  <TableHead>Win Probability</TableHead>
-                  <TableHead>Total City Contract Value</TableHead>
-                  <TableHead>Most Recent Contract</TableHead>
+                  <TableHead className="text-center">Win Probability</TableHead>
+                  <TableHead className="text-center">Total City Contract Value</TableHead>
+                  <TableHead className="text-center">Most Recent Contract</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {(() => {
-                  // Combine all competitors and limit to max 5
+                  // Combine all competitors and sort by original probability in decreasing order
                   const allCompetitors = [
                     ...(vendorPrediction?.prime_vendor_recommendations || []),
                     ...(vendorPrediction?.mwbe_vendor_recommendations || [])
-                  ].slice(0, 5) // Limit to max 5 competitors
+                  ]
+                    .sort((a, b) => b.probability - a.probability) // Sort by original probability
+                    .slice(0, 5) // Limit to max 5 competitors
                   
                   // Calculate total probability for normalization
                   const totalProbability = allCompetitors.reduce((sum, competitor) => sum + competitor.probability, 0)
                   
                   return allCompetitors.map((competitor, index) => {
                     // Normalize probability to sum to 100%
-                    const normalizedProbability = totalProbability > 0 ? (competitor.probability / totalProbability) * 100 : 0
+                    const winPercentage = Math.round((competitor.probability / totalProbability) * 100)
                     
                     const randomValue = Math.floor(Math.random() * 50000000) + 10000000 // Random between $10M-$60M
                     const randomMonthsAgo = Math.floor(Math.random() * 12) + 1 // Random 1-12 months ago
@@ -284,16 +286,15 @@ export default function ProcurementAnalysis() {
                     return (
                       <TableRow key={`competitor-${index}`}>
                         <TableCell className="font-medium">{competitor.vendor}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <DonutChart percentage={Math.round(normalizedProbability)} />
-                            <span className="font-semibold">{Math.round(normalizedProbability)}%</span>
+                        <TableCell className="text-center">
+                          <div className="flex items-center justify-center">
+                            <DonutChart percentage={winPercentage} />
                           </div>
                         </TableCell>
-                        <TableCell className="font-semibold text-success">
+                        <TableCell className="font-semibold text-success text-center">
                           ${(randomValue / 1000000).toFixed(1)}M
                         </TableCell>
-                        <TableCell>{recentContractDate}</TableCell>
+                        <TableCell className="text-center">{recentContractDate}</TableCell>
                       </TableRow>
                     )
                   })
