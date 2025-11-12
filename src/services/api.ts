@@ -325,6 +325,39 @@ export interface AgencyAnalysisErrorResponse {
 
 export type AgencyAnalysisResponse = AgencyAnalysisSearchResponse | AgencyAnalysisErrorResponse;
 
+export interface ContractBudgetBreakdownRecord {
+  agency: string;
+  category: string;
+  fy26_preliminary: number;
+  number_of_contracts: number;
+  amount_spent: number;
+  percent_of_total_budget_spent: number;
+}
+
+export interface CapitalBudget {
+  agency: string;
+  fy26_adopted: number;
+  fy26_utilized: number;
+  percent_spent: number;
+}
+
+export interface TopCapitalContract {
+  contract_type: string;
+  purpose: string;
+  industry: string;
+  current_amount: number;
+  award_method: string;
+  vendor: string;
+}
+
+export interface ContractBudgetBreakdownResponse {
+  agency: string;
+  records: ContractBudgetBreakdownRecord[];
+  total_count: number;
+  capital_budget?: CapitalBudget;
+  top_capital_contracts?: TopCapitalContract[];
+}
+
 export const searchByPlanId = async (planId: string): Promise<PlanIdSearchResponse> => {
   const cacheKey = `plan-id-${planId}`;
   
@@ -510,6 +543,43 @@ export const searchByAgencyName = async (agencyName: string): Promise<AgencyAnal
     return data;
   } catch (error) {
     console.error("Agency Analysis fetch error:", error);
+    throw error;
+  }
+};
+
+export const getContractBudgetBreakdown = async (agencyName: string): Promise<ContractBudgetBreakdownResponse> => {
+  const cacheKey = `contract-budget-breakdown-${agencyName}`;
+  
+  // Check cache first
+  const cachedData = apiCache.get<ContractBudgetBreakdownResponse>(cacheKey);
+  if (cachedData) {
+    console.log("Using cached contract budget breakdown data for agency:", agencyName);
+    return cachedData;
+  }
+
+  console.log("Making API request to:", `${API_BASE_URL}/api/v1/agency-analysis/contract-budget-breakdown/${encodeURIComponent(agencyName)}`);
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/agency-analysis/contract-budget-breakdown/${encodeURIComponent(agencyName)}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("Contract Budget Breakdown API response:", data);
+    
+    // Cache the data
+    apiCache.set(cacheKey, data);
+    
+    return data;
+  } catch (error) {
+    console.error("Contract Budget Breakdown fetch error:", error);
     throw error;
   }
 };

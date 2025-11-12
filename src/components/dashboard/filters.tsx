@@ -253,7 +253,9 @@ export function Filters({ onSearch }: { onSearch: (filters: ProcurementSearchFil
           <label className="text-sm font-medium text-muted-foreground mb-2 block">
             Agency
           </label>
-          <Select value={selectedAgency} onValueChange={setSelectedAgency}>
+          <Select value={selectedAgency} onValueChange={(value) => {
+            setSelectedAgency(value)
+          }}>
             <SelectTrigger className="bg-background/50">
               <SelectValue placeholder={loading ? "Loading..." : "Choose an option"} />
             </SelectTrigger>
@@ -265,6 +267,12 @@ export function Filters({ onSearch }: { onSearch: (filters: ProcurementSearchFil
               ))}
             </SelectContent>
           </Select>
+          {selectedAgency && (
+            <div className="mt-2 text-xs text-muted-foreground">
+              Selected: <span className="font-semibold">{selectedAgency}</span>
+            </div>
+          )}
+          
         </div>
 
         {/* Procurement Method */}

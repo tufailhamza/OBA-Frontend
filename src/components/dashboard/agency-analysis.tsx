@@ -1,143 +1,256 @@
-import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { searchByAgencyName, type AgencyAnalysisResponse } from "@/services/api"
+import { KpiCard } from "@/components/ui/kpi-card"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { PieChart, Pie, Cell } from "recharts"
+import { useState, useEffect } from "react"
+import { getContractBudgetBreakdown, searchByContractSizePlanId, type ContractBudgetBreakdownResponse, type ContractSizeSearchResponse } from "@/services/api"
+import { Loader2 } from "lucide-react"
+
+const budgetData = [
+  // {
+  //   category: "311/NYC.gov",
+  //   amount: "$66,311,000",
+  //   percentage: "65.1%",
+  //   description: "Includes maintenance, cleaning, landscaping, utilities, safety"
+  // },
+  // {
+  //   category: "911 Technical Operations", 
+  //   amount: "$122,153,000",
+  //   percentage: "22.1%",
+  //   description: "Includes maintenance, cleaning, landscaping, utilities, safety"
+  // },
+  // {
+  //   category: "Administration and Operations",
+  //   amount: "$67,405,000", 
+  //   percentage: "8.6%",
+  //   description: "Includes maintenance, cleaning, landscaping, utilities, safety"
+  // },
+  // {
+  //   category: "Mayor's Office of Media & Entertainment",
+  //   amount: "$23,481",
+  //   percentage: "6.3%", 
+  //   description: "Includes maintenance, cleaning, landscaping, utilities, safety"
+  // },
+  // {
+  //   category: "NYC Cyber Command",
+  //   amount: "$107,581,000",
+  //   percentage: "4.7%",
+  //   description: "Includes maintenance, cleaning, landscaping, utilities, safety"
+  // },
+  // {
+  //   category: "Technology Services",
+  //   amount: "$356,267",
+  //   percentage: "2.1%",
+  //   description: "Includes maintenance, cleaning, landscaping, utilities, safety"
+  // }
+]
+
+const spendingBreakdownData = [
+  {
+    category: "Contractual Services General",
+    fy26Preliminary: "$54,683",
+    numberOfContracts: "105",
+    amountSpent: "$42,150"
+  },
+  {
+    category: "Telecommunications Maint",
+    fy26Preliminary: "$455",
+    numberOfContracts: "9",
+    amountSpent: "$321"
+  },
+  {
+    category: "Maint & Rep Motor Veh Equip",
+    fy26Preliminary: "$3,428",
+    numberOfContracts: "8",
+    amountSpent: "$2,890"
+  },
+  {
+    category: "Maint & Rep General",
+    fy26Preliminary: "$1,132",
+    numberOfContracts: "67",
+    amountSpent: "$876"
+  },
+  {
+    category: "Office Equipment Maintenance",
+    fy26Preliminary: "$189",
+    numberOfContracts: "26",
+    amountSpent: "$145"
+  },
+  {
+    category: "Data Processing Equipment",
+    fy26Preliminary: "$0",
+    numberOfContracts: "1",
+    amountSpent: "$0"
+  },
+  {
+    category: "Printing Contracts",
+    fy26Preliminary: "$158",
+    numberOfContracts: "5",
+    amountSpent: "$112"
+  },
+  {
+    category: "Cleaning Services",
+    fy26Preliminary: "$25",
+    numberOfContracts: "4",
+    amountSpent: "$18"
+  },
+  {
+    category: "Transportation Expenditures",
+    fy26Preliminary: "$50",
+    numberOfContracts: "2",
+    amountSpent: "$35"
+  },
+  {
+    category: "Economic Development",
+    fy26Preliminary: "$1",
+    numberOfContracts: "2",
+    amountSpent: "$1"
+  },
+  {
+    category: "Pay To Cultural Institutions",
+    fy26Preliminary: "$8,032",
+    numberOfContracts: "3",
+    amountSpent: "$6,240"
+  },
+  {
+    category: "Training Prgm City Employees",
+    fy26Preliminary: "$164",
+    numberOfContracts: "20",
+    amountSpent: "$125"
+  },
+  {
+    category: "Prof Serv Accting & Auditing",
+    fy26Preliminary: "$0",
+    numberOfContracts: "0",
+    amountSpent: "$0"
+  },
+  {
+    category: "Prof Serv Computer Services",
+    fy26Preliminary: "$105",
+    numberOfContracts: "1",
+    amountSpent: "$78"
+  },
+  {
+    category: "Prof Serv Other",
+    fy26Preliminary: "$338",
+    numberOfContracts: "29",
+    amountSpent: "$267"
+  },
+  {
+    category: "Education & Rec For Youth Prgm",
+    fy26Preliminary: "$22",
+    numberOfContracts: "1",
+    amountSpent: "$16"
+  },
+  {
+    category: "TOTAL",
+    fy26Preliminary: "$68,781",
+    numberOfContracts: "283",
+    amountSpent: "$53,274"
+  }
+]
+
+const MiniDonutChart = ({ spent, total }: { spent: string; total: string }) => {
+  const spentNum = parseFloat(spent.replace(/[$,]/g, ''))
+  const totalNum = parseFloat(total.replace(/[$,]/g, ''))
+  
+  if (totalNum === 0) {
+    return <div className="text-xs text-muted-foreground">N/A</div>
+  }
+  
+  const percentage = Math.round((spentNum / totalNum) * 100)
+  const remaining = 100 - percentage
+  
+  const data = [
+    { name: 'Spent', value: percentage },
+    { name: 'Remaining', value: remaining }
+  ]
+  
+  return (
+    <div className="flex items-center gap-2">
+      <PieChart width={40} height={40}>
+        <Pie
+          data={data}
+          cx={20}
+          cy={20}
+          innerRadius={12}
+          outerRadius={18}
+          paddingAngle={0}
+          dataKey="value"
+        >
+          <Cell fill="hsl(var(--primary))" />
+          <Cell fill="hsl(var(--muted))" />
+        </Pie>
+      </PieChart>
+      <span className="text-sm font-medium">{percentage}%</span>
+    </div>
+  )
+}
 
 interface AgencyAnalysisProps {
   agencyName?: string;
+  planId?: string;
 }
 
-
-// Helper function to format currency
-const formatCurrency = (amount: number): string => {
-  return (amount / 1000000).toFixed(1)
-}
-
-// Helper function to format percentage
-const formatPercentage = (percentage: number): string => {
-  return percentage.toFixed(1)
-}
-
-export function AgencyAnalysis({ agencyName }: AgencyAnalysisProps) {
-  const [data, setData] = useState<AgencyAnalysisResponse | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+export function AgencyAnalysis({ agencyName, planId }: AgencyAnalysisProps) {
+  const [budgetBreakdown, setBudgetBreakdown] = useState<ContractBudgetBreakdownResponse | null>(null)
+  const [contractSizeData, setContractSizeData] = useState<ContractSizeSearchResponse | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!agencyName) {
-      setData(null);
-      return;
+      setBudgetBreakdown(null)
+      return
     }
 
-    const fetchData = async () => {
-      setLoading(true);
-      setError(null);
+    const fetchBudgetBreakdown = async () => {
+      setLoading(true)
+      setError(null)
       try {
-        const response = await searchByAgencyName(agencyName);
-        setData(response);
+        const data = await getContractBudgetBreakdown(agencyName)
+        setBudgetBreakdown(data)
       } catch (err) {
-        console.error('Failed to fetch agency analysis data:', err);
-        setError('Failed to fetch agency analysis data');
+        console.error("Error fetching contract budget breakdown:", err)
+        setError(err instanceof Error ? err.message : "Failed to load budget breakdown")
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchData();
-  }, [agencyName]);
+    fetchBudgetBreakdown()
+  }, [agencyName])
 
-  // Show placeholder when no agencyName is provided
-  if (!agencyName) {
-    return (
-      <div className="flex items-center justify-center h-96 bg-muted/20 rounded-lg border-2 border-dashed border-muted-foreground/25">
-        <div className="text-center space-y-4">
-          <div className="w-16 h-16 mx-auto bg-muted rounded-full flex items-center justify-center">
-            <span className="text-2xl">🏛️</span>
-          </div>
-          <div className="space-y-2">
-            <h3 className="text-lg font-semibold text-foreground">Agency Analysis</h3>
-            <p className="text-sm text-muted-foreground max-w-md">
-              Enter a Plan ID in the Contract Timing tab to view detailed agency budget analysis and spending breakdown.
-            </p>
-          </div>
-        </div>
-      </div>
-    );
+  // Fetch contract size data to get project description
+  useEffect(() => {
+    if (!planId) {
+      setContractSizeData(null)
+      return
+    }
+
+    const fetchContractSize = async () => {
+      try {
+        const data = await searchByContractSizePlanId(planId)
+        setContractSizeData(data)
+      } catch (err) {
+        console.error("Error fetching contract size data:", err)
+        // Don't set error state here as it's optional data
+      }
+    }
+
+    fetchContractSize()
+  }, [planId])
+
+  // Format number to thousands with comma separators
+  const formatToThousands = (value: number): string => {
+    const thousands = value / 1000
+    return `$${thousands.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
   }
 
-  // Show loading state
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-center space-y-4">
-          <div className="w-16 h-16 mx-auto bg-muted rounded-full flex items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          </div>
-          <div className="space-y-2">
-            <h3 className="text-lg font-semibold text-foreground">Loading Agency Analysis...</h3>
-            <p className="text-sm text-muted-foreground">Fetching data for Agency: {agencyName}</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Show error state
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-center space-y-4">
-          <div className="w-16 h-16 mx-auto bg-destructive/10 rounded-full flex items-center justify-center">
-            <span className="text-2xl">⚠️</span>
-          </div>
-          <div className="space-y-2">
-            <h3 className="text-lg font-semibold text-foreground">Error Loading Agency Analysis</h3>
-            <p className="text-sm text-muted-foreground">{error}</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Show data when available
-  if (!data) {
-    return null;
-  }
-
-  // Check if the response contains an error (when no data is found)
-  if ('error' in data) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-center space-y-4">
-          <div className="w-16 h-16 mx-auto bg-muted/50 rounded-full flex items-center justify-center">
-            <span className="text-2xl">📊</span>
-          </div>
-          <div className="space-y-2">
-            <h3 className="text-lg font-semibold text-foreground">No Data Available</h3>
-            <p className="text-sm text-muted-foreground max-w-md">
-              {data.error || `No agency analysis data found for ${agencyName}.`}
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Check if we have valid data structure
-  if (!data.categories || !data.summary) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-center space-y-4">
-          <div className="w-16 h-16 mx-auto bg-destructive/10 rounded-full flex items-center justify-center">
-            <span className="text-2xl">⚠️</span>
-          </div>
-          <div className="space-y-2">
-            <h3 className="text-lg font-semibold text-foreground">Invalid Data Structure</h3>
-            <p className="text-sm text-muted-foreground">The API response doesn't contain the expected data structure.</p>
-          </div>
-        </div>
-      </div>
-    );
+  // Format number with comma separators (for contract counts)
+  const formatNumber = (value: number): string => {
+    return value.toLocaleString('en-US')
   }
 
   return (
@@ -145,43 +258,46 @@ export function AgencyAnalysis({ agencyName }: AgencyAnalysisProps) {
       {/* Page Header */}
       <div className="space-y-4">
         <h1 className="text-3xl font-bold text-foreground">Agency Budget Spend Down Analysis</h1>
-        <h2 className="text-2xl font-semibold text-foreground">{data.agency} Agency</h2>
+        <h2 className="text-2xl font-semibold text-foreground">
+          {agencyName || "Department of Parks & Recreation"}
+        </h2>
       </div>
 
-      {/* Agency Overview */}
+      {/* Department Overview */}
       <Card className="shadow-card">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold text-foreground">Agency Overview</CardTitle>
+          <CardTitle className="text-lg font-semibold text-foreground">Department Overview</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">Total Budget</p>
-              <p className="text-2xl font-bold text-foreground">${formatCurrency(data.total_budget)}M</p>
-            </div>
-            <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">Total Contracts</p>
-              <p className="text-2xl font-bold text-foreground">{data.total_count}</p>
-            </div>
-            <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">Avg Contract Size</p>
-              <p className="text-2xl font-bold text-foreground">${formatCurrency(data.avg_contract_size)}M</p>
-            </div>
-            <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">Avg Confidence</p>
-              <p className="text-2xl font-bold text-foreground">{(data.avg_confidence * 100).toFixed(1)}%</p>
-            </div>
-          </div>
+          <p className="text-muted-foreground leading-relaxed">
+            {contractSizeData?.records && contractSizeData.records.length > 0 && contractSizeData.records[0].Services_Description ? (
+              contractSizeData.records[0].Services_Description
+            ) : agencyName ? (
+              <>
+                {agencyName} is responsible for managing and delivering essential public services across New York City. 
+                This agency oversees a diverse portfolio of contracts and procurement activities that support the City's 
+                operations and service delivery. The budget breakdown below provides detailed insights into contract categories, 
+                spending patterns, and budget utilization across various service areas. This analysis helps identify spending 
+                trends, contract distribution, and opportunities for budget optimization and strategic planning.
+              </>
+            ) : (
+              <>
+                The Department of Parks and Recreation (DPR or the Department) is responsible for managing 
+                more than 30,000 acres of land across the City as well as providing activities and services within parks. DPR is also 
+                responsible for trash collection, public safety, and infrastructure work within parks of all sizes.
+              </>
+            )}
+          </p>
         </CardContent>
       </Card>
 
       {/* Agency Budget Overview */}
       <div className="space-y-6">
-        <h3 className="text-2xl font-semibold text-foreground">Agency Budget Overview</h3>
+        {/* <h3 className="text-2xl font-semibold text-foreground">Agency Financial Summary</h3> */}
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {data.categories.map((category, index) => {
-            const isProjectMatch = category.category_name === "Park Operations & Maintenance"
+          {budgetData.map((item, index) => {
+            const isProjectMatch = item.category === "Park Operations & Maintenance"
             return (
               <Card key={index} className="gradient-card shadow-card hover:shadow-hover transition-smooth relative overflow-hidden">
                 {isProjectMatch && (
@@ -193,30 +309,17 @@ export function AgencyAnalysis({ agencyName }: AgencyAnalysisProps) {
                       Project Category Match
                     </div>
                   )}
-                  <h4 className="font-semibold text-foreground text-lg">{category.category_name}</h4>
+                  <h4 className="font-semibold text-foreground text-lg">{item.category}</h4>
                   <div className="space-y-2">
                     <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-bold text-foreground">${formatCurrency(category.total_budget)}</span>
-                      <span className="text-sm text-muted-foreground">Million</span>
+                      <span className="text-3xl font-bold text-foreground">{item.amount}</span>
                     </div>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-2xl font-semibold text-primary">{formatPercentage(category.budget_percentage)}%</span>
+                      <span className="text-2xl font-semibold text-primary">{item.percentage}</span>
                       <span className="text-sm text-muted-foreground">of total budget</span>
                     </div>
                   </div>
-                  
-                  {/* Subcategories */}
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-foreground">Includes:</p>
-                    <div className="text-xs text-muted-foreground">
-                      {category.subcategories.map((subcategory, subIndex) => (
-                        <span key={subIndex}>
-                          {subcategory.subcategory_name}
-                          {subIndex < category.subcategories.length - 1 && ", "}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{item.description}</p>
                 </CardContent>
               </Card>
             )
@@ -226,56 +329,253 @@ export function AgencyAnalysis({ agencyName }: AgencyAnalysisProps) {
 
       {/* Budget Spending Breakdown */}
       <div className="space-y-6">
-        <h3 className="text-2xl font-semibold text-foreground">Budget Spending Breakdown</h3>
+        <h3 className="text-2xl font-semibold text-foreground">
+          Agency Contract Budget Breakdown
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <sup className="ml-2 inline-flex items-center justify-center w-4 h-4 rounded-full bg-muted-foreground/30 cursor-help">
+                  <span className="text-[10px] text-muted-foreground">?</span>
+                </sup>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-sm">
+                <p>In the NYC Office of Management and Budget framework, the Contract Budget reflects expected expense-level payments to vendors for contracted services during that fiscal year, not the total contract authorization or capital commitments.</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </h3>
         
         <Card className="shadow-card">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="font-semibold">Budget Category</TableHead>
-                <TableHead className="font-semibold">Budget Total</TableHead>
-                <TableHead className="font-semibold">Contract Count</TableHead>
-                <TableHead className="font-semibold">Budget Percentage</TableHead>
-                <TableHead className="font-semibold">Avg Contract Size</TableHead>
-                <TableHead className="font-semibold">Avg Confidence</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {data.categories.map((category, index) => {
-                const isProjectMatch = category.category_name === "Park Operations & Maintenance"
-                return (
-                  <TableRow key={index} className={isProjectMatch ? "bg-primary/5 relative" : ""}>
-                    <TableCell className="font-medium relative">
-                      <div>{category.category_name}</div>
-                    </TableCell>
-                    <TableCell>${formatCurrency(category.total_budget)}M</TableCell>
-                    <TableCell>{category.total_count}</TableCell>
-                    <TableCell>{formatPercentage(category.budget_percentage)}%</TableCell>
-                    <TableCell>${formatCurrency(category.total_budget / category.total_count)}M</TableCell>
-                    <TableCell className="font-semibold text-primary relative">
-                      <div className="flex items-center justify-between">
-                        <span>{((category.subcategories.reduce((sum, sub) => sum + sub.avg_confidence, 0) / category.subcategories.length) * 100).toFixed(1)}%</span>
-                        {isProjectMatch && (
-                          <div className="bg-primary text-primary-foreground px-1.5 py-0.5 text-[10px] rounded-sm font-medium ml-2">
-                            Project Category Match
-                          </div>
-                        )}
+          <CardContent className="p-0">
+            <div className="text-sm text-muted-foreground italic p-4 border-b">
+              Dollars in Thousands
+            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="font-semibold">Category</TableHead>
+                  <TableHead className="font-semibold text-right">FY26 Preliminary</TableHead>
+                  <TableHead className="font-semibold text-right">
+                    <div className="flex items-center justify-end gap-1">
+                      Number of Contracts
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <sup className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-muted-foreground/30 cursor-help">
+                              <span className="text-[10px] text-muted-foreground">?</span>
+                            </sup>
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-sm">
+                            <p>All active contracts expected to receive payments in FY26 within each category—not just contracts newly executed or registered in FY 2026.</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                  </TableHead>
+                  <TableHead className="font-semibold text-right">Amount Spent</TableHead>
+                  <TableHead className="font-semibold text-center">% of Total Budget Spent</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-8">
+                      <div className="flex items-center justify-center">
+                        <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                        <span>Loading budget breakdown...</span>
                       </div>
                     </TableCell>
                   </TableRow>
-                )
-              })}
-            </TableBody>
-          </Table>
+                ) : error ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-8 text-destructive">
+                      <p>Error: {error}</p>
+                    </TableCell>
+                  </TableRow>
+                ) : !budgetBreakdown || budgetBreakdown.records.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                      {agencyName ? (
+                        <p>No budget breakdown data available for this agency.</p>
+                      ) : (
+                        <p>Please select a plan ID to view budget breakdown data.</p>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  <>
+                    {budgetBreakdown.records.map((item, index) => {
+                      const fy26Formatted = formatToThousands(item.fy26_preliminary)
+                      const amountSpentFormatted = formatToThousands(item.amount_spent)
+                      return (
+                        <TableRow key={index} className="font-medium">
+                          <TableCell className="font-medium">
+                            {item.category}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {fy26Formatted}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {formatNumber(item.number_of_contracts)}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {amountSpentFormatted}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <div className="flex justify-center">
+                              <MiniDonutChart spent={amountSpentFormatted} total={fy26Formatted} />
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
+                    {/* Calculate and display totals */}
+                    {budgetBreakdown.records.length > 0 && (
+                      <TableRow className="border-t-2 font-bold">
+                        <TableCell className="font-bold">TOTAL</TableCell>
+                        <TableCell className="text-right font-bold">
+                          {formatToThousands(
+                            budgetBreakdown.records.reduce((sum, item) => sum + item.fy26_preliminary, 0)
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right font-bold">
+                          {formatNumber(
+                            budgetBreakdown.records.reduce((sum, item) => sum + item.number_of_contracts, 0)
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right font-bold">
+                          {formatToThousands(
+                            budgetBreakdown.records.reduce((sum, item) => sum + item.amount_spent, 0)
+                          )}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <div className="flex justify-center">
+                            <MiniDonutChart
+                              spent={formatToThousands(
+                                budgetBreakdown.records.reduce((sum, item) => sum + item.amount_spent, 0)
+                              )}
+                              total={formatToThousands(
+                                budgetBreakdown.records.reduce((sum, item) => sum + item.fy26_preliminary, 0)
+                              )}
+                            />
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </>
+                )}
+              </TableBody>
+            </Table>
+            <div className="text-xs text-muted-foreground italic p-4 border-t">
+              Source: New York City Office of Management and Budget
+            </div>
+          </CardContent>
         </Card>
-        
-        <div className="text-center py-4">
-          <p className="text-sm text-muted-foreground">
-            Summary: {data.summary.total_categories} categories, {data.summary.total_subcategories} subcategories. 
-            Largest category: {data.summary.largest_category} (${formatCurrency(data.summary.largest_category_budget)}M, {formatPercentage(data.summary.largest_category_percentage)}%)
-          </p>
-        </div>
       </div>
+
+      {/* Agency Capital Budget Breakdown */}
+      {budgetBreakdown?.capital_budget && (
+        <div className="space-y-6">
+          <h3 className="text-2xl font-semibold text-foreground">Agency Capital Budget Breakdown</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Total Capital Budget */}
+            <Card className="shadow-card">
+              <CardContent className="flex items-center justify-center min-h-[280px] p-0">
+                <div className="flex flex-col items-center justify-center text-center space-y-2">
+                  <div className="text-5xl font-bold text-foreground">
+                    ${(budgetBreakdown.capital_budget.fy26_adopted / 1000000).toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}M
+                  </div>
+                  <div className="text-sm text-muted-foreground">Agency Capital Budget (FY26 Adopted)</div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Capital Outlays to Date */}
+            <Card className="shadow-card">
+              <CardContent className="flex items-center justify-center min-h-[280px] p-0">
+                <div className="flex flex-col items-center justify-center text-center space-y-2">
+                  <div className="text-5xl font-bold text-primary">
+                    ${(budgetBreakdown.capital_budget.fy26_utilized / 1000000).toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}M
+                  </div>
+                  <div className="text-sm text-muted-foreground">Capital Outlays to Date (FY26 Utilized)</div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Doughnut Chart */}
+            <Card className="shadow-card">
+              <CardContent className="flex items-center justify-center min-h-[280px] p-0">
+                <div className="flex flex-col items-center justify-center text-center space-y-4">
+                  <div className="relative">
+                    <PieChart width={180} height={180}>
+                      <Pie
+                        data={[
+                          { name: 'Spent', value: budgetBreakdown.capital_budget.percent_spent },
+                          { name: 'Remaining', value: 100 - budgetBreakdown.capital_budget.percent_spent }
+                        ]}
+                        cx={90}
+                        cy={90}
+                        innerRadius={60}
+                        outerRadius={85}
+                        paddingAngle={2}
+                        dataKey="value"
+                      >
+                        <Cell fill="hsl(var(--primary))" />
+                        <Cell fill="hsl(var(--muted))" />
+                      </Pie>
+                    </PieChart>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-3xl font-bold text-foreground">
+                        {budgetBreakdown.capital_budget.percent_spent.toFixed(1)}%
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-sm text-muted-foreground">% of total capital budget spent to date</div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
+
+      {/* Top Capital Contracts */}
+      {budgetBreakdown?.top_capital_contracts && budgetBreakdown.top_capital_contracts.length > 0 && (
+        <div className="space-y-6">
+          <h3 className="text-2xl font-semibold text-foreground">Top Capital Contracts Issued to Date</h3>
+          
+          <Card className="shadow-card">
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="font-semibold">Contract type</TableHead>
+                    <TableHead className="font-semibold">Purpose</TableHead>
+                    <TableHead className="font-semibold">Industry</TableHead>
+                    <TableHead className="font-semibold text-right">Current Amount</TableHead>
+                    <TableHead className="font-semibold">Award Method</TableHead>
+                    <TableHead className="font-semibold">Vendor</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {budgetBreakdown.top_capital_contracts.map((contract, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{contract.contract_type}</TableCell>
+                      <TableCell>{contract.purpose}</TableCell>
+                      <TableCell>{contract.industry}</TableCell>
+                      <TableCell className="text-right">
+                        ${contract.current_amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </TableCell>
+                      <TableCell>{contract.award_method}</TableCell>
+                      <TableCell className="font-medium">{contract.vendor}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   )
 }

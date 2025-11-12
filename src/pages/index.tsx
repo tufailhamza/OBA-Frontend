@@ -79,7 +79,7 @@ const Index = () => {
             </TabsContent>
             
             <TabsContent value="agency-analysis" className="space-y-6 mt-6">
-              <AgencyAnalysis agencyName={selectedAgencyName} />
+              <AgencyAnalysis agencyName={selectedAgencyName} planId={selectedPlanId} />
             </TabsContent>
             
             <TabsContent value="contract-size" className="space-y-6 mt-6">
