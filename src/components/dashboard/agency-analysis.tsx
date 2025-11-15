@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { KpiCard } from "@/components/ui/kpi-card"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { PieChart, Pie, Cell } from "recharts"
 import { useState, useEffect } from "react"
 import { getContractBudgetBreakdown, searchByContractSizePlanId, type ContractBudgetBreakdownResponse, type ContractSizeSearchResponse } from "@/services/api"
@@ -151,6 +152,77 @@ const spendingBreakdownData = [
   }
 ]
 
+const AGENCIES = [
+  "Administration for Children's Services",
+  "Board of Elections",
+  "City University of New York",
+  "Civilian Complaint Review Board",
+  "Commission on Human Rights",
+  "Department for the Aging",
+  "Department of Buildings",
+  "Department of City Planning",
+  "Department of Citywide Administrative Services",
+  "Department of Consumer and Worker Protection",
+  "Department of Correction",
+  "Department of Cultural Affairs",
+  "Department of Design and Construction",
+  "Department of Education",
+  "Department of Environmental Protection",
+  "Department of Finance",
+  "Department of Health and Mental Hygiene",
+  "Department of Homeless Services",
+  "Housing Preservation and Development",
+  "Department of Information Technology and Telecommunications",
+  "Department of Investigation",
+  "Department of Parks and Recreation",
+  "Department of Probation",
+  "Department of Sanitation",
+  "Department of Small Business Services",
+  "Department of Transportation",
+  "Department of Veterans' Services",
+  "Fire Department of New York",
+  "Law Department",
+  "Libraries",
+  "NYC Taxi and Limousine Commission",
+  "Office of Administrative Trials and Hearings"
+]
+
+// Mapping from full agency names to API codes
+const AGENCY_CODE_MAP: Record<string, string> = {
+  "Administration for Children's Services": "ACS",
+  "Board of Elections": "BOC",
+  "City University of New York": "CUNY",
+  "Civilian Complaint Review Board": "CCRB",
+  "Commission on Human Rights": "CCHR",
+  "Department for the Aging": "DFTA",
+  "Department of Buildings": "DOB",
+  "Department of City Planning": "DCP",
+  "Department of Citywide Administrative Services": "DCAS",
+  "Department of Consumer and Worker Protection": "DCWP",
+  "Department of Correction": "DOC",
+  "Department of Cultural Affairs": "DCLA",
+  "Department of Design and Construction": "DDC",
+  "Department of Education": "DOE",
+  "Department of Environmental Protection": "DEP",
+  "Department of Finance": "DOF",
+  "Department of Health and Mental Hygiene": "DOHMH",
+  "Department of Homeless Services": "DHS",
+  "Housing Preservation and Development": "HPD",
+  "Department of Information Technology and Telecommunications": "OTI",
+  "Department of Investigation": "DOI",
+  "Department of Parks and Recreation": "DPR",
+  "Department of Probation": "DOP",
+  "Department of Sanitation": "DSNY",
+  "Department of Small Business Services": "SBS",
+  "Department of Transportation": "DOT",
+  "Department of Veterans' Services": "DVS",
+  "Fire Department of New York": "FDNY",
+  "Law Department": "LAW",
+  "Libraries": "NYPL",
+  "NYC Taxi and Limousine Commission": "TLC",
+  "Office of Administrative Trials and Hearings": "OATH"
+}
+
 const MiniDonutChart = ({ spent, total }: { spent: string; total: string }) => {
   const spentNum = parseFloat(spent.replace(/[$,]/g, ''))
   const totalNum = parseFloat(total.replace(/[$,]/g, ''))
@@ -191,16 +263,25 @@ const MiniDonutChart = ({ spent, total }: { spent: string; total: string }) => {
 interface AgencyAnalysisProps {
   agencyName?: string;
   planId?: string;
+  selectedAgency?: string;
+  onAgencyChange?: (agency: string) => void;
 }
 
-export function AgencyAnalysis({ agencyName, planId }: AgencyAnalysisProps) {
+export function AgencyAnalysis({ agencyName, planId, selectedAgency = "", onAgencyChange }: AgencyAnalysisProps) {
   const [budgetBreakdown, setBudgetBreakdown] = useState<ContractBudgetBreakdownResponse | null>(null)
   const [contractSizeData, setContractSizeData] = useState<ContractSizeSearchResponse | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const handleAgencyChange = (agency: string) => {
+    if (onAgencyChange) {
+      onAgencyChange(agency)
+    }
+  }
+
+  // Fetch budget breakdown when agency is selected from dropdown
   useEffect(() => {
-    if (!agencyName) {
+    if (!selectedAgency) {
       setBudgetBreakdown(null)
       return
     }
@@ -209,7 +290,9 @@ export function AgencyAnalysis({ agencyName, planId }: AgencyAnalysisProps) {
       setLoading(true)
       setError(null)
       try {
-        const data = await getContractBudgetBreakdown(agencyName)
+        // Convert full agency name to code for API call
+        const agencyCode = AGENCY_CODE_MAP[selectedAgency] || selectedAgency
+        const data = await getContractBudgetBreakdown(agencyCode)
         setBudgetBreakdown(data)
       } catch (err) {
         console.error("Error fetching contract budget breakdown:", err)
@@ -220,27 +303,11 @@ export function AgencyAnalysis({ agencyName, planId }: AgencyAnalysisProps) {
     }
 
     fetchBudgetBreakdown()
-  }, [agencyName])
+  }, [selectedAgency])
 
-  // Fetch contract size data to get project description
-  useEffect(() => {
-    if (!planId) {
-      setContractSizeData(null)
-      return
-    }
-
-    const fetchContractSize = async () => {
-      try {
-        const data = await searchByContractSizePlanId(planId)
-        setContractSizeData(data)
-      } catch (err) {
-        console.error("Error fetching contract size data:", err)
-        // Don't set error state here as it's optional data
-      }
-    }
-
-    fetchContractSize()
-  }, [planId])
+  // Fetch contract size data to get project description (only if planId is provided and user wants it)
+  // Removed automatic fetching - now only fetches if planId is explicitly provided
+  // This can be triggered manually if needed
 
   // Format number to thousands with comma separators
   const formatToThousands = (value: number): string => {
@@ -253,43 +320,84 @@ export function AgencyAnalysis({ agencyName, planId }: AgencyAnalysisProps) {
     return value.toLocaleString('en-US')
   }
 
+  // Get display name for the selected agency
+  const getDisplayAgencyName = (): string | null => {
+    // If selectedAgency is set, it's already a full name
+    if (selectedAgency) {
+      return selectedAgency
+    }
+    
+    // If agencyName prop is provided, check if it's a code or full name
+    if (agencyName) {
+      // Check if it's a code that needs mapping (backward compatibility)
+      const mappedName = Object.entries(AGENCY_CODE_MAP).find(([_, code]) => code === agencyName)?.[0]
+      return mappedName || agencyName
+    }
+    
+    return null
+  }
+
+  const displayAgencyName = getDisplayAgencyName()
+
   return (
     <div className="space-y-8">
       {/* Page Header */}
       <div className="space-y-4">
         <h1 className="text-3xl font-bold text-foreground">Agency Budget Spend Down Analysis</h1>
-        <h2 className="text-2xl font-semibold text-foreground">
-          {agencyName || "Department of Parks & Recreation"}
-        </h2>
+        
+        {/* Agency Selection Dropdown */}
+        <div className="space-y-2">
+          <label htmlFor="agency-select" className="text-sm font-medium text-foreground">
+            Select Agency
+          </label>
+          <Select value={selectedAgency} onValueChange={handleAgencyChange}>
+            <SelectTrigger id="agency-select" className="w-full max-w-md">
+              <SelectValue placeholder="Select an agency..." />
+            </SelectTrigger>
+            <SelectContent>
+              {AGENCIES.map((agency) => (
+                <SelectItem key={agency} value={agency}>
+                  {agency}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {displayAgencyName ? (
+          <h2 className="text-2xl font-semibold text-foreground">
+            {displayAgencyName}
+          </h2>
+        ) : (
+          <div className="text-lg text-muted-foreground italic">
+            Please select an agency to view budget analysis
+          </div>
+        )}
       </div>
 
       {/* Department Overview */}
-      <Card className="shadow-card">
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold text-foreground">Department Overview</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground leading-relaxed">
-            {contractSizeData?.records && contractSizeData.records.length > 0 && contractSizeData.records[0].Services_Description ? (
-              contractSizeData.records[0].Services_Description
-            ) : agencyName ? (
-              <>
-                {agencyName} is responsible for managing and delivering essential public services across New York City. 
-                This agency oversees a diverse portfolio of contracts and procurement activities that support the City's 
-                operations and service delivery. The budget breakdown below provides detailed insights into contract categories, 
-                spending patterns, and budget utilization across various service areas. This analysis helps identify spending 
-                trends, contract distribution, and opportunities for budget optimization and strategic planning.
-              </>
-            ) : (
-              <>
-                The Department of Parks and Recreation (DPR or the Department) is responsible for managing 
-                more than 30,000 acres of land across the City as well as providing activities and services within parks. DPR is also 
-                responsible for trash collection, public safety, and infrastructure work within parks of all sizes.
-              </>
-            )}
-          </p>
-        </CardContent>
-      </Card>
+      {displayAgencyName && (
+        <Card className="shadow-card">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold text-foreground">Department Overview</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground leading-relaxed">
+              {contractSizeData?.records && contractSizeData.records.length > 0 && contractSizeData.records[0].Services_Description ? (
+                contractSizeData.records[0].Services_Description
+              ) : (
+                <>
+                  {displayAgencyName} is responsible for managing and delivering essential public services across New York City. 
+                  This agency oversees a diverse portfolio of contracts and procurement activities that support the City's 
+                  operations and service delivery. The budget breakdown below provides detailed insights into contract categories, 
+                  spending patterns, and budget utilization across various service areas. This analysis helps identify spending 
+                  trends, contract distribution, and opportunities for budget optimization and strategic planning.
+                </>
+              )}
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Agency Budget Overview */}
       <div className="space-y-6">
@@ -395,10 +503,10 @@ export function AgencyAnalysis({ agencyName, planId }: AgencyAnalysisProps) {
                 ) : !budgetBreakdown || budgetBreakdown.records.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                      {agencyName ? (
+                      {selectedAgency || agencyName ? (
                         <p>No budget breakdown data available for this agency.</p>
                       ) : (
-                        <p>Please select a plan ID to view budget breakdown data.</p>
+                        <p>Please select an agency from the dropdown above to view budget breakdown data.</p>
                       )}
                     </TableCell>
                   </TableRow>

@@ -20,6 +20,7 @@ const Index = () => {
   const [searchFilters, setSearchFilters] = useState<ProcurementSearchFilters | undefined>(undefined)
   const [selectedPlanId, setSelectedPlanId] = useState<string | undefined>(undefined)
   const [selectedAgencyName, setSelectedAgencyName] = useState<string | undefined>(undefined)
+  const [selectedAgencyForAnalysis, setSelectedAgencyForAnalysis] = useState<string>("")
 
   const handleSearch = (filters: ProcurementSearchFilters) => {
     setSearchFilters(filters)
@@ -79,7 +80,12 @@ const Index = () => {
             </TabsContent>
             
             <TabsContent value="agency-analysis" className="space-y-6 mt-6">
-              <AgencyAnalysis agencyName={selectedAgencyName} planId={selectedPlanId} />
+              <AgencyAnalysis 
+                agencyName={selectedAgencyName} 
+                planId={selectedPlanId}
+                selectedAgency={selectedAgencyForAnalysis}
+                onAgencyChange={setSelectedAgencyForAnalysis}
+              />
             </TabsContent>
             
             <TabsContent value="contract-size" className="space-y-6 mt-6">
