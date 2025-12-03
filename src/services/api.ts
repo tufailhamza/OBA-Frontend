@@ -1,6 +1,6 @@
 import { apiCache } from '@/lib/api-cache';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+const API_BASE_URL =  'https://oba-backend-3863265067.us-central1.run.app';
 
 export interface ProcurementSearchFilters {
   keyword?: string;
@@ -262,22 +262,23 @@ export interface CompetitorAnalysisSearchResponse {
     Procurement_Method: string;
     Fiscal_Quarter: string;
     Job_Titles: string;
-    Head_Count: number;
+    Head_Count: number | null;
     Fiscal_Year: string;
     Data_Source: string;
   }>;
   vendor_predictions: Array<{
-    prime_vendor_predicted: number;
-    mwbe_vendor_predicted: number;
-    prime_vendor_probability: number;
-    mwbe_vendor_probability: number;
-    prime_vendor_recommendations: Array<{
+    vendor_recommendations: Array<{
       vendor: string;
       probability: number;
-    }>;
-    mwbe_vendor_recommendations: Array<{
-      vendor: string;
-      probability: number;
+      most_recent_contract_date: string;
+      most_relevant_contract: {
+        contract_id: string;
+        contract_purpose: string;
+        contract_amount: number;
+        contracting_agency: string;
+        similarity_score: number;
+        is_sub_vendor: boolean;
+      };
     }>;
     error: string | null;
   }>;
@@ -342,12 +343,12 @@ export interface CapitalBudget {
 }
 
 export interface TopCapitalContract {
-  contract_type: string;
+  contract_id: string;
   purpose: string;
-  industry: string;
-  current_amount: number;
-  award_method: string;
-  vendor: string;
+  contracting_agency: string;
+  prime_vendor: string;
+  ytd_spending: number;
+  total_contract_amount: number;
 }
 
 export interface ContractBudgetBreakdownResponse {

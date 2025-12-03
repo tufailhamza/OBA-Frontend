@@ -250,38 +250,63 @@ export default function ProcurementAnalysis() {
         <Card className="gradient-card shadow-card hover:shadow-hover transition-smooth">
           <CardContent className="p-6">
             <h4 className="text-lg font-semibold text-foreground mb-6">Competitor Analysis</h4>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Competitor Name</TableHead>
-                  <TableHead className="text-center">Win Probability</TableHead>
-                  <TableHead className="text-center">Total City Contract Value</TableHead>
-                  <TableHead className="text-center">Most Recent Contract</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {(() => {
-                  // Combine all competitors and sort by original probability in decreasing order
-                  const allCompetitors = [
-                    ...(vendorPrediction?.prime_vendor_recommendations || []),
-                    ...(vendorPrediction?.mwbe_vendor_recommendations || [])
-                  ]
-                    .sort((a, b) => b.probability - a.probability) // Sort by original probability
-                    .slice(0, 5) // Limit to max 5 competitors
-                  
-                  // Calculate total probability for normalization
-                  const totalProbability = allCompetitors.reduce((sum, competitor) => sum + competitor.probability, 0)
-                  
-                  return allCompetitors.map((competitor, index) => {
-                    // Normalize probability to sum to 100%
-                    const winPercentage = Math.round((competitor.probability / totalProbability) * 100)
+            {vendorPrediction?.error ? (
+              <div className="bg-warning/10 rounded-lg p-6 border-l-4 border-warning">
+                <p className="text-lg font-semibold text-warning mb-2">Unable to Generate Competitor Analysis</p>
+                <p className="text-sm text-muted-foreground">{vendorPrediction.error}</p>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Competitor Name</TableHead>
+                    <TableHead className="text-center">Win Probability</TableHead>
+                    <TableHead className="text-center">Total City Contract Value</TableHead>
+                    <TableHead className="text-center">Most Recent Contract</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {(() => {
+                    const vendorRecommendations = vendorPrediction?.vendor_recommendations || []
                     
-                    const randomValue = Math.floor(Math.random() * 50000000) + 10000000 // Random between $10M-$60M
-                    const randomMonthsAgo = Math.floor(Math.random() * 12) + 1 // Random 1-12 months ago
-                    const recentDate = new Date()
-                    recentDate.setMonth(recentDate.getMonth() - randomMonthsAgo)
+                    // If no recommendations, show empty state
+                    if (vendorRecommendations.length === 0) {
+                      return (
+                        <TableRow>
+                          <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                            No vendor recommendations available for this procurement opportunity.
+                          </TableCell>
+                        </TableRow>
+                      )
+                    }
+                    
+                    // Sort by probability from highest to lowest
+                    const sortedVendors = [...vendorRecommendations].sort((a, b) => b.probability - a.probability)
+                    
+                    // Limit to max 5 competitors
+                    const topCompetitors = sortedVendors.slice(0, 5)
+                    
+                    // Calculate total probability for normalization
+                    const totalProbability = topCompetitors.reduce((sum, competitor) => sum + competitor.probability, 0)
+                    
+                    return topCompetitors.map((competitor, index) => {
+                    // Normalize probability to sum to 100%
+                    const winPercentage = totalProbability > 0 
+                      ? Math.round((competitor.probability / totalProbability) * 100)
+                      : 0
+                    
+                    // Format contract date
+                    const contractDate = competitor.most_recent_contract_date 
+                      ? new Date(competitor.most_recent_contract_date)
+                      : null
+                    
                     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-                    const recentContractDate = `${monthNames[recentDate.getMonth()]} ${recentDate.getFullYear()}`
+                    const recentContractDate = contractDate 
+                      ? `${monthNames[contractDate.getMonth()]} ${contractDate.getFullYear()}`
+                      : 'N/A'
+                    
+                    // Use contract amount from most_relevant_contract
+                    const contractAmount = competitor.most_relevant_contract?.contract_amount || 0
                     
                     return (
                       <TableRow key={`competitor-${index}`}>
@@ -292,15 +317,21 @@ export default function ProcurementAnalysis() {
                           </div>
                         </TableCell>
                         <TableCell className="font-semibold text-success text-center">
-                          ${(randomValue / 1000000).toFixed(1)}M
+                          {contractAmount >= 1000000 
+                            ? `$${(contractAmount / 1000000).toFixed(1)}M`
+                            : contractAmount >= 1000
+                            ? `$${(contractAmount / 1000).toFixed(1)}K`
+                            : `$${contractAmount.toLocaleString()}`
+                          }
                         </TableCell>
                         <TableCell className="text-center">{recentContractDate}</TableCell>
                       </TableRow>
                     )
                   })
                 })()}
-              </TableBody>
-            </Table>
+                </TableBody>
+              </Table>
+            )}
           </CardContent>
         </Card>
       </div>

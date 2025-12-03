@@ -141,12 +141,12 @@ export function CompetitorAnalysis({ planId }: CompetitorAnalysisProps) {
 
           {/* Predicted Contract Value */}
           <div className="bg-warning/10 rounded-lg p-6 border-l-4 border-warning min-h-[120px] flex flex-col justify-center">
-            <p className="text-lg font-bold text-warning">Predicted Contract Value</p>
+            <p className="text-lg font-bold text-warning">Vendor Recommendations</p>
             <p className="text-sm text-muted-foreground">
               {loading ? 'Loading...' : 
-                (vendorPrediction ? 
-                  `Prime: ${vendorPrediction.prime_vendor_predicted.toLocaleString()}, MWBE: ${vendorPrediction.mwbe_vendor_predicted.toLocaleString()}` : 
-                  'Enter a Plan ID in Contract Timing tab to view predictions'
+                (vendorPrediction && vendorPrediction.vendor_recommendations?.length > 0 ? 
+                  `${vendorPrediction.vendor_recommendations.length} vendor recommendation(s) available` : 
+                  'Enter a Plan ID in Contract Timing tab to view recommendations'
                 )
               }
             </p>
@@ -172,6 +172,15 @@ export function CompetitorAnalysis({ planId }: CompetitorAnalysisProps) {
               <p className="text-sm text-muted-foreground">Use the search box in the Contract Timing tab to get started</p>
             </CardContent>
           </Card>
+        ) : vendorPrediction?.error ? (
+          <Card className="shadow-card">
+            <CardContent className="p-8 text-center">
+              <div className="bg-warning/10 rounded-lg p-6 border-l-4 border-warning">
+                <p className="text-lg font-semibold text-warning mb-2">Unable to Generate Competitor Analysis</p>
+                <p className="text-sm text-muted-foreground">{vendorPrediction.error}</p>
+              </div>
+            </CardContent>
+          </Card>
         ) : (
           <Card className="shadow-card">
             <Table>
@@ -184,16 +193,23 @@ export function CompetitorAnalysis({ planId }: CompetitorAnalysisProps) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {/* Combine and sort all vendor recommendations by probability */}
+                {/* Sort vendor recommendations by probability */}
                 {(() => {
-                  // Combine prime and MWBE vendors with their type
-                  const allVendors = [
-                    ...(vendorPrediction?.prime_vendor_recommendations || []).map(vendor => ({ ...vendor, type: 'prime' })),
-                    ...(vendorPrediction?.mwbe_vendor_recommendations || []).map(vendor => ({ ...vendor, type: 'mwbe' }))
-                  ]
+                  const vendorRecommendations = vendorPrediction?.vendor_recommendations || []
+                  
+                  // If no recommendations, show empty state
+                  if (vendorRecommendations.length === 0) {
+                    return (
+                      <TableRow>
+                        <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                          No vendor recommendations available for this procurement opportunity.
+                        </TableCell>
+                      </TableRow>
+                    )
+                  }
                   
                   // Sort by probability from highest to lowest
-                  const sortedVendors = allVendors.sort((a, b) => b.probability - a.probability)
+                  const sortedVendors = [...vendorRecommendations].sort((a, b) => b.probability - a.probability)
                   
                   // Limit to maximum 5 competitors
                   const topCompetitors = sortedVendors.slice(0, 5)
@@ -208,17 +224,30 @@ export function CompetitorAnalysis({ planId }: CompetitorAnalysisProps) {
                   }))
                   
                   return normalizedCompetitors.map((competitor, index) => {
-                    const randomValue = competitor.type === 'prime' 
-                      ? Math.floor(Math.random() * 50000000) + 10000000 // Random between $10M-$60M for prime
-                      : Math.floor(Math.random() * 30000000) + 5000000 // Random between $5M-$35M for MWBE
-                    const randomMonthsAgo = Math.floor(Math.random() * 12) + 1 // Random 1-12 months ago
-                    const recentDate = new Date()
-                    recentDate.setMonth(recentDate.getMonth() - randomMonthsAgo)
+                    // Format contract date
+                    const contractDate = competitor.most_recent_contract_date 
+                      ? new Date(competitor.most_recent_contract_date)
+                      : null
+                    
                     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-                    const recentContractDate = `${monthNames[recentDate.getMonth()]} ${recentDate.getFullYear()}`
+                    const recentContractDate = contractDate 
+                      ? `${monthNames[contractDate.getMonth()]} ${contractDate.getFullYear()}`
+                      : 'N/A'
+                    
+                    // Calculate months ago
+                    let monthsAgo = 'N/A'
+                    if (contractDate) {
+                      const now = new Date()
+                      const diffTime = Math.abs(now.getTime() - contractDate.getTime())
+                      const diffMonths = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 30))
+                      monthsAgo = diffMonths === 0 ? 'Less than 1 month ago' : diffMonths === 1 ? '1 month ago' : `${diffMonths} months ago`
+                    }
+                    
+                    // Use contract amount from most_relevant_contract
+                    const contractAmount = competitor.most_relevant_contract?.contract_amount || 0
                     
                     return (
-                      <TableRow key={`${competitor.type}-${index}`}>
+                      <TableRow key={`vendor-${index}`}>
                         <TableCell className="font-medium">
                           {competitor.vendor}
                         </TableCell>
@@ -232,7 +261,12 @@ export function CompetitorAnalysis({ planId }: CompetitorAnalysisProps) {
                         </TableCell>
                         <TableCell className="text-center">
                           <span className="text-2xl font-bold text-foreground">
-                            ${(randomValue / 1000000).toFixed(1)}M
+                            {contractAmount >= 1000000 
+                              ? `$${(contractAmount / 1000000).toFixed(1)}M`
+                              : contractAmount >= 1000
+                              ? `$${(contractAmount / 1000).toFixed(1)}K`
+                              : `$${contractAmount.toLocaleString()}`
+                            }
                           </span>
                         </TableCell>
                         <TableCell className="text-center">
@@ -240,9 +274,11 @@ export function CompetitorAnalysis({ planId }: CompetitorAnalysisProps) {
                             <div className="text-lg font-semibold text-foreground">
                               {recentContractDate}
                             </div>
-                            <div className="text-sm font-light text-green-600">
-                              {randomMonthsAgo === 1 ? "1 month ago" : `${randomMonthsAgo} months ago`}
-                            </div>
+                            {monthsAgo !== 'N/A' && (
+                              <div className="text-sm font-light text-green-600">
+                                {monthsAgo}
+                              </div>
+                            )}
                           </div>
                         </TableCell>
                       </TableRow>

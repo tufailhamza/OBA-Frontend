@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PieChart, Pie, Cell } from "recharts"
 import { useState, useEffect } from "react"
 import { getContractBudgetBreakdown, searchByContractSizePlanId, type ContractBudgetBreakdownResponse, type ContractSizeSearchResponse } from "@/services/api"
-import { Loader2 } from "lucide-react"
+import { Loader2, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
 
 const budgetData = [
   // {
@@ -176,13 +176,14 @@ const AGENCIES = [
   "Department of Investigation",
   "Department of Parks and Recreation",
   "Department of Probation",
+
   "Department of Sanitation",
   "Department of Small Business Services",
   "Department of Transportation",
   "Department of Veterans' Services",
   "Fire Department of New York",
   "Law Department",
-  "Libraries",
+
   "NYC Taxi and Limousine Commission",
   "Office of Administrative Trials and Hearings"
 ]
@@ -205,6 +206,7 @@ const AGENCY_CODE_MAP: Record<string, string> = {
   "Department of Education": "DOE",
   "Department of Environmental Protection": "DEP",
   "Department of Finance": "DOF",
+ 
   "Department of Health and Mental Hygiene": "DOHMH",
   "Department of Homeless Services": "DHS",
   "Housing Preservation and Development": "HPD",
@@ -218,7 +220,7 @@ const AGENCY_CODE_MAP: Record<string, string> = {
   "Department of Veterans' Services": "DVS",
   "Fire Department of New York": "FDNY",
   "Law Department": "LAW",
-  "Libraries": "NYPL",
+ 
   "NYC Taxi and Limousine Commission": "TLC",
   "Office of Administrative Trials and Hearings": "OATH"
 }
@@ -240,21 +242,23 @@ const MiniDonutChart = ({ spent, total }: { spent: string; total: string }) => {
   ]
   
   return (
-    <div className="flex items-center gap-2">
-      <PieChart width={40} height={40}>
-        <Pie
-          data={data}
-          cx={20}
-          cy={20}
-          innerRadius={12}
-          outerRadius={18}
-          paddingAngle={0}
-          dataKey="value"
-        >
-          <Cell fill="hsl(var(--primary))" />
-          <Cell fill="hsl(var(--muted))" />
-        </Pie>
-      </PieChart>
+    <div className="flex items-center gap-2 py-2">
+      <div className="p-2">
+        <PieChart width={50} height={50}>
+          <Pie
+            data={data}
+            cx={25}
+            cy={25}
+            innerRadius={14}
+            outerRadius={20}
+            paddingAngle={0}
+            dataKey="value"
+          >
+            <Cell fill="hsl(var(--primary))" />
+            <Cell fill="hsl(var(--muted))" />
+          </Pie>
+        </PieChart>
+      </div>
       <span className="text-sm font-medium">{percentage}%</span>
     </div>
   )
@@ -272,6 +276,8 @@ export function AgencyAnalysis({ agencyName, planId, selectedAgency = "", onAgen
   const [contractSizeData, setContractSizeData] = useState<ContractSizeSearchResponse | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [sortColumn, setSortColumn] = useState<string | null>(null)
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
 
   const handleAgencyChange = (agency: string) => {
     if (onAgencyChange) {
@@ -281,8 +287,12 @@ export function AgencyAnalysis({ agencyName, planId, selectedAgency = "", onAgen
 
   // Fetch budget breakdown when agency is selected from dropdown
   useEffect(() => {
+    // Clear budget breakdown immediately when agency changes
+    setBudgetBreakdown(null)
+    setSortColumn(null)
+    setSortDirection('asc')
+    
     if (!selectedAgency) {
-      setBudgetBreakdown(null)
       return
     }
 
@@ -293,6 +303,8 @@ export function AgencyAnalysis({ agencyName, planId, selectedAgency = "", onAgen
         // Convert full agency name to code for API call
         const agencyCode = AGENCY_CODE_MAP[selectedAgency] || selectedAgency
         const data = await getContractBudgetBreakdown(agencyCode)
+        console.log("Budget breakdown data received:", data)
+        console.log("Top capital contracts:", data.top_capital_contracts)
         setBudgetBreakdown(data)
       } catch (err) {
         console.error("Error fetching contract budget breakdown:", err)
@@ -319,6 +331,80 @@ export function AgencyAnalysis({ agencyName, planId, selectedAgency = "", onAgen
   const formatNumber = (value: number): string => {
     return value.toLocaleString('en-US')
   }
+
+  // Format currency amounts (for large contract amounts)
+  const formatCurrency = (value: number): string => {
+    if (value >= 1000000) {
+      return `$${(value / 1000000).toFixed(2)}M`
+    } else if (value >= 1000) {
+      return `$${(value / 1000).toFixed(2)}K`
+    } else {
+      return `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+    }
+  }
+
+  // Handle column sorting
+  const handleSort = (column: string) => {
+    if (sortColumn === column) {
+      // Toggle direction if clicking the same column
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+    } else {
+      // Set new column and default to ascending
+      setSortColumn(column)
+      setSortDirection('asc')
+    }
+  }
+
+  // Sort records based on current sort settings
+  const getSortedRecords = () => {
+    if (!budgetBreakdown?.records || !sortColumn) {
+      return budgetBreakdown?.records || []
+    }
+
+    const sorted = [...budgetBreakdown.records].sort((a, b) => {
+      let aValue: number | string
+      let bValue: number | string
+
+      switch (sortColumn) {
+        case 'category':
+          aValue = a.category.toLowerCase()
+          bValue = b.category.toLowerCase()
+          break
+        case 'fy26_preliminary':
+          aValue = a.fy26_preliminary
+          bValue = b.fy26_preliminary
+          break
+        case 'number_of_contracts':
+          aValue = a.number_of_contracts
+          bValue = b.number_of_contracts
+          break
+        case 'amount_spent':
+          aValue = a.amount_spent
+          bValue = b.amount_spent
+          break
+        case 'percent_spent':
+          aValue = a.percent_of_total_budget_spent
+          bValue = b.percent_of_total_budget_spent
+          break
+        default:
+          return 0
+      }
+
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return sortDirection === 'asc' 
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue)
+      } else {
+        return sortDirection === 'asc'
+          ? (aValue as number) - (bValue as number)
+          : (bValue as number) - (aValue as number)
+      }
+    })
+
+    return sorted
+  }
+
+  const sortedRecords = getSortedRecords()
 
   // Get display name for the selected agency
   const getDisplayAgencyName = (): string | null => {
@@ -350,8 +436,8 @@ export function AgencyAnalysis({ agencyName, planId, selectedAgency = "", onAgen
           <label htmlFor="agency-select" className="text-sm font-medium text-foreground">
             Select Agency
           </label>
-          <Select value={selectedAgency} onValueChange={handleAgencyChange}>
-            <SelectTrigger id="agency-select" className="w-full max-w-md">
+          <Select value={selectedAgency} onValueChange={handleAgencyChange} disabled={loading}>
+            <SelectTrigger id="agency-select" className="w-full max-w-md" disabled={loading}>
               <SelectValue placeholder="Select an agency..." />
             </SelectTrigger>
             <SelectContent>
@@ -362,6 +448,12 @@ export function AgencyAnalysis({ agencyName, planId, selectedAgency = "", onAgen
               ))}
             </SelectContent>
           </Select>
+          {loading && (
+            <p className="text-sm text-muted-foreground flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Loading agency data...
+            </p>
+          )}
         </div>
 
         {displayAgencyName ? (
@@ -461,11 +553,45 @@ export function AgencyAnalysis({ agencyName, planId, selectedAgency = "", onAgen
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="font-semibold">Category</TableHead>
-                  <TableHead className="font-semibold text-right">FY26 Preliminary</TableHead>
+                  <TableHead 
+                    className="font-semibold cursor-pointer hover:bg-muted/50 transition-colors"
+                    onClick={() => handleSort('category')}
+                  >
+                    <div className="flex items-center gap-2">
+                      Category
+                      {sortColumn === 'category' ? (
+                        sortDirection === 'asc' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />
+                      ) : (
+                        <ArrowUpDown className="h-4 w-4 opacity-50" />
+                      )}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="font-semibold text-right cursor-pointer hover:bg-muted/50 transition-colors"
+                    onClick={() => handleSort('fy26_preliminary')}
+                  >
+                    <div className="flex items-center justify-end gap-2">
+                      FY26 Preliminary
+                      {sortColumn === 'fy26_preliminary' ? (
+                        sortDirection === 'asc' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />
+                      ) : (
+                        <ArrowUpDown className="h-4 w-4 opacity-50" />
+                      )}
+                    </div>
+                  </TableHead>
                   <TableHead className="font-semibold text-right">
                     <div className="flex items-center justify-end gap-1">
-                      Number of Contracts
+                      <span 
+                        className="cursor-pointer hover:bg-muted/50 transition-colors px-2 py-1 rounded flex items-center gap-2"
+                        onClick={() => handleSort('number_of_contracts')}
+                      >
+                        Number of Contracts
+                        {sortColumn === 'number_of_contracts' ? (
+                          sortDirection === 'asc' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />
+                        ) : (
+                          <ArrowUpDown className="h-4 w-4 opacity-50" />
+                        )}
+                      </span>
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -480,8 +606,32 @@ export function AgencyAnalysis({ agencyName, planId, selectedAgency = "", onAgen
                       </TooltipProvider>
                     </div>
                   </TableHead>
-                  <TableHead className="font-semibold text-right">Amount Spent</TableHead>
-                  <TableHead className="font-semibold text-center">% of Total Budget Spent</TableHead>
+                  <TableHead 
+                    className="font-semibold text-right cursor-pointer hover:bg-muted/50 transition-colors"
+                    onClick={() => handleSort('amount_spent')}
+                  >
+                    <div className="flex items-center justify-end gap-2">
+                      Amount Spent
+                      {sortColumn === 'amount_spent' ? (
+                        sortDirection === 'asc' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />
+                      ) : (
+                        <ArrowUpDown className="h-4 w-4 opacity-50" />
+                      )}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="font-semibold text-center cursor-pointer hover:bg-muted/50 transition-colors"
+                    onClick={() => handleSort('percent_spent')}
+                  >
+                    <div className="flex items-center justify-center gap-2">
+                      % of Total Budget Spent
+                      {sortColumn === 'percent_spent' ? (
+                        sortDirection === 'asc' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />
+                      ) : (
+                        <ArrowUpDown className="h-4 w-4 opacity-50" />
+                      )}
+                    </div>
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -500,7 +650,7 @@ export function AgencyAnalysis({ agencyName, planId, selectedAgency = "", onAgen
                       <p>Error: {error}</p>
                     </TableCell>
                   </TableRow>
-                ) : !budgetBreakdown || budgetBreakdown.records.length === 0 ? (
+                ) : !budgetBreakdown || sortedRecords.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                       {selectedAgency || agencyName ? (
@@ -512,7 +662,7 @@ export function AgencyAnalysis({ agencyName, planId, selectedAgency = "", onAgen
                   </TableRow>
                 ) : (
                   <>
-                    {budgetBreakdown.records.map((item, index) => {
+                    {sortedRecords.map((item, index) => {
                       const fy26Formatted = formatToThousands(item.fy26_preliminary)
                       const amountSpentFormatted = formatToThousands(item.amount_spent)
                       return (
@@ -538,32 +688,32 @@ export function AgencyAnalysis({ agencyName, planId, selectedAgency = "", onAgen
                       )
                     })}
                     {/* Calculate and display totals */}
-                    {budgetBreakdown.records.length > 0 && (
+                    {sortedRecords.length > 0 && (
                       <TableRow className="border-t-2 font-bold">
                         <TableCell className="font-bold">TOTAL</TableCell>
                         <TableCell className="text-right font-bold">
                           {formatToThousands(
-                            budgetBreakdown.records.reduce((sum, item) => sum + item.fy26_preliminary, 0)
+                            sortedRecords.reduce((sum, item) => sum + item.fy26_preliminary, 0)
                           )}
                         </TableCell>
                         <TableCell className="text-right font-bold">
                           {formatNumber(
-                            budgetBreakdown.records.reduce((sum, item) => sum + item.number_of_contracts, 0)
+                            sortedRecords.reduce((sum, item) => sum + item.number_of_contracts, 0)
                           )}
                         </TableCell>
                         <TableCell className="text-right font-bold">
                           {formatToThousands(
-                            budgetBreakdown.records.reduce((sum, item) => sum + item.amount_spent, 0)
+                            sortedRecords.reduce((sum, item) => sum + item.amount_spent, 0)
                           )}
                         </TableCell>
                         <TableCell className="text-center">
                           <div className="flex justify-center">
                             <MiniDonutChart
                               spent={formatToThousands(
-                                budgetBreakdown.records.reduce((sum, item) => sum + item.amount_spent, 0)
+                                sortedRecords.reduce((sum, item) => sum + item.amount_spent, 0)
                               )}
                               total={formatToThousands(
-                                budgetBreakdown.records.reduce((sum, item) => sum + item.fy26_preliminary, 0)
+                                sortedRecords.reduce((sum, item) => sum + item.fy26_preliminary, 0)
                               )}
                             />
                           </div>
@@ -650,36 +800,40 @@ export function AgencyAnalysis({ agencyName, planId, selectedAgency = "", onAgen
       {/* Top Capital Contracts */}
       {budgetBreakdown?.top_capital_contracts && budgetBreakdown.top_capital_contracts.length > 0 && (
         <div className="space-y-6">
-          <h3 className="text-2xl font-semibold text-foreground">Top Capital Contracts Issued to Date</h3>
+          <h3 className="text-2xl font-semibold text-foreground">Top Capital Contracts</h3>
           
           <Card className="shadow-card">
-            <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="font-semibold">Contract type</TableHead>
-                    <TableHead className="font-semibold">Purpose</TableHead>
-                    <TableHead className="font-semibold">Industry</TableHead>
-                    <TableHead className="font-semibold text-right">Current Amount</TableHead>
-                    <TableHead className="font-semibold">Award Method</TableHead>
-                    <TableHead className="font-semibold">Vendor</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {budgetBreakdown.top_capital_contracts.map((contract, index) => (
-                    <TableRow key={index}>
-                      <TableCell>{contract.contract_type}</TableCell>
-                      <TableCell>{contract.purpose}</TableCell>
-                      <TableCell>{contract.industry}</TableCell>
-                      <TableCell className="text-right">
-                        ${contract.current_amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </TableCell>
-                      <TableCell>{contract.award_method}</TableCell>
-                      <TableCell className="font-medium">{contract.vendor}</TableCell>
+            <CardContent className="p-6">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="font-semibold">Contract ID</TableHead>
+                      <TableHead className="font-semibold">Purpose</TableHead>
+                      <TableHead className="font-semibold">Contracting Agency</TableHead>
+                      <TableHead className="font-semibold">Prime Vendor</TableHead>
+                      <TableHead className="font-semibold text-right">YTD Spending</TableHead>
+                      <TableHead className="font-semibold text-right">Total Contract Amount</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {budgetBreakdown.top_capital_contracts.map((contract, index) => (
+                      <TableRow key={contract.contract_id || index}>
+                        <TableCell className="font-medium">{contract.contract_id || 'N/A'}</TableCell>
+                        <TableCell className="max-w-xs">{contract.purpose || 'N/A'}</TableCell>
+                        <TableCell>{contract.contracting_agency || 'N/A'}</TableCell>
+                        <TableCell className="font-medium max-w-xs">{contract.prime_vendor || 'N/A'}</TableCell>
+                        <TableCell className="text-right font-semibold">
+                          {contract.ytd_spending ? formatCurrency(contract.ytd_spending) : 'N/A'}
+                        </TableCell>
+                        <TableCell className="text-right font-semibold">
+                          {contract.total_contract_amount ? formatCurrency(contract.total_contract_amount) : 'N/A'}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             </CardContent>
           </Card>
         </div>
