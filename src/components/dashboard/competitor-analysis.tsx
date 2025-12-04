@@ -190,6 +190,7 @@ export function CompetitorAnalysis({ planId }: CompetitorAnalysisProps) {
                   <TableHead className="font-semibold text-center">Win Probability</TableHead>
                   <TableHead className="font-semibold text-center">Total City Contracts Value</TableHead>
                   <TableHead className="font-semibold text-center">Most Recent Contract Date</TableHead>
+                  <TableHead className="font-semibold text-center">Most Relevant Contract</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -201,7 +202,7 @@ export function CompetitorAnalysis({ planId }: CompetitorAnalysisProps) {
                   if (vendorRecommendations.length === 0) {
                     return (
                       <TableRow>
-                        <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                        <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                           No vendor recommendations available for this procurement opportunity.
                         </TableCell>
                       </TableRow>
@@ -245,6 +246,7 @@ export function CompetitorAnalysis({ planId }: CompetitorAnalysisProps) {
                     
                     // Use contract amount from most_relevant_contract
                     const contractAmount = competitor.most_relevant_contract?.contract_amount || 0
+                    const contractId = competitor.most_relevant_contract?.contract_id || 'N/A'
                     
                     return (
                       <TableRow key={`vendor-${index}`}>
@@ -280,6 +282,11 @@ export function CompetitorAnalysis({ planId }: CompetitorAnalysisProps) {
                               </div>
                             )}
                           </div>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <span className="text-sm font-medium text-purple-600 dark:text-purple-400">
+                            {contractId}
+                          </span>
                         </TableCell>
                       </TableRow>
                     )

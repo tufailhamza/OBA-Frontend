@@ -157,12 +157,10 @@ const AGENCIES = [
   "Board of Elections",
   "City University of New York",
   "Civilian Complaint Review Board",
-  "Commission on Human Rights",
-  "Department for the Aging",
+
   "Department of Buildings",
   "Department of City Planning",
   "Department of Citywide Administrative Services",
-  "Department of Consumer and Worker Protection",
   "Department of Correction",
   "Department of Cultural Affairs",
   "Department of Design and Construction",
@@ -185,7 +183,7 @@ const AGENCIES = [
   "Law Department",
 
   "NYC Taxi and Limousine Commission",
-  "Office of Administrative Trials and Hearings"
+
 ]
 
 // Mapping from full agency names to API codes
@@ -222,7 +220,7 @@ const AGENCY_CODE_MAP: Record<string, string> = {
   "Law Department": "LAW",
  
   "NYC Taxi and Limousine Commission": "TLC",
-  "Office of Administrative Trials and Hearings": "OATH"
+
 }
 
 const MiniDonutChart = ({ spent, total }: { spent: string; total: string }) => {
@@ -490,7 +488,72 @@ export function AgencyAnalysis({ agencyName, planId, selectedAgency = "", onAgen
           </CardContent>
         </Card>
       )}
-
+      {/* Agency Financial Summary */}
+      {budgetBreakdown && (
+        <div className="space-y-6">
+          <h3 className="text-2xl font-semibold text-foreground">Agency Financial Summary</h3>
+          
+          {(() => {
+            // Calculate Total Contract Budget (sum of all fy26_preliminary, already in thousands)
+            const totalContractBudgetInThousands = budgetBreakdown.records.reduce(
+              (sum, item) => sum + item.fy26_preliminary, 
+              0
+            )
+            // Convert from thousands to full amount for display
+            const totalContractBudget = totalContractBudgetInThousands
+            
+            // Get Capital Budget (already in full amount, not thousands)
+            const totalCapitalBudget = budgetBreakdown.capital_budget?.fy26_adopted || 0
+            
+            // Calculate FY26 Agency Budget (Contract Budget + Capital Budget)
+            const fy26AgencyBudget = totalContractBudget + totalCapitalBudget
+            
+            // Format currency for display
+            const formatBudgetAmount = (amount: number): string => {
+              if (amount >= 1000000000) {
+                return `$${(amount / 1000000000).toFixed(2)}B`
+              } else if (amount >= 1000000) {
+                return `$${(amount / 1000000).toFixed(2)}M`
+              } else if (amount >= 1000) {
+                return `$${(amount / 1000).toFixed(2)}K`
+              } else {
+                return `$${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+              }
+            }
+            
+            return (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card className="gradient-card shadow-card hover:shadow-hover transition-smooth">
+                  <CardContent className="p-7 space-y-2">
+                    <h4 className="font-semibold text-muted-foreground text-sm uppercase tracking-wide">FY26 Agency Budget</h4>
+                    <div className="text-2xl font-bold text-foreground">
+                      {formatBudgetAmount(fy26AgencyBudget)}
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card className="gradient-card shadow-card hover:shadow-hover transition-smooth">
+                  <CardContent className="p-7 space-y-2">
+                    <h4 className="font-semibold text-muted-foreground text-sm uppercase tracking-wide">Total Contract Budget</h4>
+                    <div className="text-2xl font-bold text-foreground">
+                      {formatBudgetAmount(totalContractBudget)}
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card className="gradient-card shadow-card hover:shadow-hover transition-smooth">
+                  <CardContent className="p-7 space-y-2">
+                    <h4 className="font-semibold text-muted-foreground text-sm uppercase tracking-wide">Total Capital Budget</h4>
+                    <div className="text-2xl font-bold text-foreground">
+                      {totalCapitalBudget > 0 ? formatBudgetAmount(totalCapitalBudget) : 'N/A'}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )
+          })()}
+        </div>
+      )}
       {/* Agency Budget Overview */}
       <div className="space-y-6">
         {/* <h3 className="text-2xl font-semibold text-foreground">Agency Financial Summary</h3> */}

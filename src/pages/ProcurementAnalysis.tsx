@@ -263,6 +263,7 @@ export default function ProcurementAnalysis() {
                     <TableHead className="text-center">Win Probability</TableHead>
                     <TableHead className="text-center">Total City Contract Value</TableHead>
                     <TableHead className="text-center">Most Recent Contract</TableHead>
+                    <TableHead className="text-center">Most Relevant Contract</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -273,7 +274,7 @@ export default function ProcurementAnalysis() {
                     if (vendorRecommendations.length === 0) {
                       return (
                         <TableRow>
-                          <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                          <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                             No vendor recommendations available for this procurement opportunity.
                           </TableCell>
                         </TableRow>
@@ -307,6 +308,7 @@ export default function ProcurementAnalysis() {
                     
                     // Use contract amount from most_relevant_contract
                     const contractAmount = competitor.most_relevant_contract?.contract_amount || 0
+                    const contractId = competitor.most_relevant_contract?.contract_id || 'N/A'
                     
                     return (
                       <TableRow key={`competitor-${index}`}>
@@ -325,6 +327,11 @@ export default function ProcurementAnalysis() {
                           }
                         </TableCell>
                         <TableCell className="text-center">{recentContractDate}</TableCell>
+                        <TableCell className="text-center">
+                          <span className="text-sm font-medium text-purple-600 dark:text-purple-400">
+                            {contractId}
+                          </span>
+                        </TableCell>
                       </TableRow>
                     )
                   })
