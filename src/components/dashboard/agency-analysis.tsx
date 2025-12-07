@@ -9,157 +9,13 @@ import { getContractBudgetBreakdown, searchByContractSizePlanId, type ContractBu
 import { Loader2, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
 
 const budgetData = [
-  // {
-  //   category: "311/NYC.gov",
-  //   amount: "$66,311,000",
-  //   percentage: "65.1%",
-  //   description: "Includes maintenance, cleaning, landscaping, utilities, safety"
-  // },
-  // {
-  //   category: "911 Technical Operations", 
-  //   amount: "$122,153,000",
-  //   percentage: "22.1%",
-  //   description: "Includes maintenance, cleaning, landscaping, utilities, safety"
-  // },
-  // {
-  //   category: "Administration and Operations",
-  //   amount: "$67,405,000", 
-  //   percentage: "8.6%",
-  //   description: "Includes maintenance, cleaning, landscaping, utilities, safety"
-  // },
-  // {
-  //   category: "Mayor's Office of Media & Entertainment",
-  //   amount: "$23,481",
-  //   percentage: "6.3%", 
-  //   description: "Includes maintenance, cleaning, landscaping, utilities, safety"
-  // },
-  // {
-  //   category: "NYC Cyber Command",
-  //   amount: "$107,581,000",
-  //   percentage: "4.7%",
-  //   description: "Includes maintenance, cleaning, landscaping, utilities, safety"
-  // },
-  // {
-  //   category: "Technology Services",
-  //   amount: "$356,267",
-  //   percentage: "2.1%",
-  //   description: "Includes maintenance, cleaning, landscaping, utilities, safety"
-  // }
 ]
 
-const spendingBreakdownData = [
-  {
-    category: "Contractual Services General",
-    fy26Preliminary: "$54,683",
-    numberOfContracts: "105",
-    amountSpent: "$42,150"
-  },
-  {
-    category: "Telecommunications Maint",
-    fy26Preliminary: "$455",
-    numberOfContracts: "9",
-    amountSpent: "$321"
-  },
-  {
-    category: "Maint & Rep Motor Veh Equip",
-    fy26Preliminary: "$3,428",
-    numberOfContracts: "8",
-    amountSpent: "$2,890"
-  },
-  {
-    category: "Maint & Rep General",
-    fy26Preliminary: "$1,132",
-    numberOfContracts: "67",
-    amountSpent: "$876"
-  },
-  {
-    category: "Office Equipment Maintenance",
-    fy26Preliminary: "$189",
-    numberOfContracts: "26",
-    amountSpent: "$145"
-  },
-  {
-    category: "Data Processing Equipment",
-    fy26Preliminary: "$0",
-    numberOfContracts: "1",
-    amountSpent: "$0"
-  },
-  {
-    category: "Printing Contracts",
-    fy26Preliminary: "$158",
-    numberOfContracts: "5",
-    amountSpent: "$112"
-  },
-  {
-    category: "Cleaning Services",
-    fy26Preliminary: "$25",
-    numberOfContracts: "4",
-    amountSpent: "$18"
-  },
-  {
-    category: "Transportation Expenditures",
-    fy26Preliminary: "$50",
-    numberOfContracts: "2",
-    amountSpent: "$35"
-  },
-  {
-    category: "Economic Development",
-    fy26Preliminary: "$1",
-    numberOfContracts: "2",
-    amountSpent: "$1"
-  },
-  {
-    category: "Pay To Cultural Institutions",
-    fy26Preliminary: "$8,032",
-    numberOfContracts: "3",
-    amountSpent: "$6,240"
-  },
-  {
-    category: "Training Prgm City Employees",
-    fy26Preliminary: "$164",
-    numberOfContracts: "20",
-    amountSpent: "$125"
-  },
-  {
-    category: "Prof Serv Accting & Auditing",
-    fy26Preliminary: "$0",
-    numberOfContracts: "0",
-    amountSpent: "$0"
-  },
-  {
-    category: "Prof Serv Computer Services",
-    fy26Preliminary: "$105",
-    numberOfContracts: "1",
-    amountSpent: "$78"
-  },
-  {
-    category: "Prof Serv Other",
-    fy26Preliminary: "$338",
-    numberOfContracts: "29",
-    amountSpent: "$267"
-  },
-  {
-    category: "Education & Rec For Youth Prgm",
-    fy26Preliminary: "$22",
-    numberOfContracts: "1",
-    amountSpent: "$16"
-  },
-  {
-    category: "TOTAL",
-    fy26Preliminary: "$68,781",
-    numberOfContracts: "283",
-    amountSpent: "$53,274"
-  }
-]
 
 const AGENCIES = [
   "Administration for Children's Services",
   "Board of Elections",
   "City University of New York",
-  "Civilian Complaint Review Board",
-
-  "Department of Buildings",
-  "Department of City Planning",
   "Department of Citywide Administrative Services",
   "Department of Correction",
   "Department of Cultural Affairs",
@@ -220,7 +76,77 @@ const AGENCY_CODE_MAP: Record<string, string> = {
   "Law Department": "LAW",
  
   "NYC Taxi and Limousine Commission": "TLC",
+  "Office of Administrative Trials and Hearings": "OATH"
+}
 
+// Hardcoded FY26 Agency Budget values
+const FY26_AGENCY_BUDGET: Record<string, number> = {
+  "Administration for Children's Services": 2826000000,
+  "Board of Elections": 146736000.0,
+  "City University of New York": 1283000000.0,
+  "Civilian Complaint Review Board": 27877000.0,
+  "Commission on Human Rights": 14962000,
+  "Department for the Aging": 426174000,
+  "Department of Buildings": 220378000,
+  "Department of City Planning": 4673800,
+  "Department of Citywide Administrative Services": 1933000000.0,
+  "Department of Consumer and Worker Protection": 75112000.0,
+  "Department of Correction": 1213318000.0,
+  "Department of Cultural Affairs": 164373000,
+  "Department of Design and Construction": 159394000.0,
+  "Department of Education": 33498697000,
+  "Department of Environmental Protection": 1640602000.0,
+  "Department of Finance": 358489000,
+  "Department of Health and Mental Hygiene": 713685000.0,
+  "Department of Homeless Services": 3578000000.0,
+  "Housing Preservation and Development": 1689200000,
+  "Department of Information Technology and Telecommunications": 743197000.0,
+  "Department of Investigation": 54957000.0,
+  "Department of Parks and Recreation": 640412000,
+  "Department of Probation": 114552000.0,
+  "Department of Sanitation": 1932058000.0,
+  "Department of Small Business Services": 182126000.0,
+  "Department of Transportation": 1465610000.0,
+  "Department of Veterans' Services": 5873000.0,
+  "Fire Department of New York": 2640700000,
+  "Law Department": 25898400,
+  "New York Public Library": 480334000.0,
+  "NYC Taxi and Limousine Commission": 58035000
+}
+
+// Hardcoded FY26 Contracts Budget values from contract.csv
+const FY26_CONTRACTS_BUDGET: Record<string, number> = {
+  "Administration for Children's Services": 1689895000.0,
+  "Board of Elections": 20263000.0,
+  "City University of New York": 26046000.0,
+  "Civilian Complaint Review Board": 261891000.0,
+  "Commission on Human Rights": 386886000.0,
+  "Department for the Aging": 291738000.0,
+  "Department of Buildings": 28021000.0,
+  "Department of City Planning": 3924000.0,
+  "Department of Citywide Administrative Services": 740410000.0,
+  "Department of Consumer & Worker Protection": 26871000.0,
+  "Department of Correction": 63086000.0,
+  "Department of Cultural Affairs": 29856052000.0,
+  "Department of Design and Construction": 31550000.0,
+  "Department of Education": 10841321000,
+  "Department of Environmental Protection": 287465000.0,
+  "Department of Finance": 80173000.0,
+  "Department of Health and Mental Hygiene": 503390800.0,
+  "Department of Homeless Services": 3074766000.0,
+  "Department Of Investigation": 5460273000.0,
+  "Department of Parks and Recreation": 68781000.0,
+  "Department of Probation": 21192000.0,
+  "Department of Sanitation": 535411000.0,
+  "Department of Transportation": 417139000.0,
+  "Department of Veterans' Services": 710000.0,
+  "Housing Preservation and Development": 26871000.0,
+  "Department of Social Services": 922806000.0,
+  "Law Department": 32320000.0,
+  "New York Public Library": 26871000.0,
+  "Office of Administrative Trials and Hearings": 7715000.0,
+  "Department of Small Business Services": 136092000.0,
+  "NYC Taxi and Limousine Commission": 4449000.0
 }
 
 const MiniDonutChart = ({ spent, total }: { spent: string; total: string }) => {
@@ -319,10 +245,9 @@ export function AgencyAnalysis({ agencyName, planId, selectedAgency = "", onAgen
   // Removed automatic fetching - now only fetches if planId is explicitly provided
   // This can be triggered manually if needed
 
-  // Format number to thousands with comma separators
+  // Format number with comma separators (full dollar amounts)
   const formatToThousands = (value: number): string => {
-    const thousands = value / 1000
-    return `$${thousands.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
+    return `$${value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
   }
 
   // Format number with comma separators (for contract counts)
@@ -494,19 +419,14 @@ export function AgencyAnalysis({ agencyName, planId, selectedAgency = "", onAgen
           <h3 className="text-2xl font-semibold text-foreground">Agency Financial Summary</h3>
           
           {(() => {
-            // Calculate Total Contract Budget (sum of all fy26_preliminary, already in thousands)
-            const totalContractBudgetInThousands = budgetBreakdown.records.reduce(
-              (sum, item) => sum + item.fy26_preliminary, 
-              0
-            )
-            // Convert from thousands to full amount for display
-            const totalContractBudget = totalContractBudgetInThousands
+            // Get Total Contract Budget from hardcoded values (from contract.csv)
+            const totalContractBudget = displayAgencyName ? (FY26_CONTRACTS_BUDGET[displayAgencyName] || 0) : 0
             
             // Get Capital Budget (already in full amount, not thousands)
             const totalCapitalBudget = budgetBreakdown.capital_budget?.fy26_adopted || 0
             
-            // Calculate FY26 Agency Budget (Contract Budget + Capital Budget)
-            const fy26AgencyBudget = totalContractBudget + totalCapitalBudget
+            // Get FY26 Agency Budget from hardcoded values
+            const fy26AgencyBudget = displayAgencyName ? (FY26_AGENCY_BUDGET[displayAgencyName] || 0) : 0
             
             // Format currency for display
             const formatBudgetAmount = (amount: number): string => {
@@ -608,11 +528,133 @@ export function AgencyAnalysis({ agencyName, planId, selectedAgency = "", onAgen
           </TooltipProvider>
         </h3>
         
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Agency Contract Budget */}
+          <Card className="shadow-card">
+            <CardContent className="flex items-center justify-center min-h-[280px] p-0">
+              <div className="flex flex-col items-center justify-center text-center space-y-2">
+                {(() => {
+                  // Get Agency Contract Budget from hardcoded values (from contract.csv)
+                  const agencyContractBudget = displayAgencyName ? (FY26_CONTRACTS_BUDGET[displayAgencyName] || 0) : 0
+                  
+                  // Format currency for display
+                  const formatBudgetAmount = (amount: number): string => {
+                    if (amount >= 1000000000) {
+                      return `$${(amount / 1000000000).toFixed(2)}B`
+                    } else if (amount >= 1000000) {
+                      return `$${(amount / 1000000).toFixed(2)}M`
+                    } else if (amount >= 1000) {
+                      return `$${(amount / 1000).toFixed(2)}K`
+                    } else {
+                      return `$${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                    }
+                  }
+                  
+                  return (
+                    <>
+                      <div className="text-5xl font-bold text-foreground">
+                        {agencyContractBudget > 0 ? formatBudgetAmount(agencyContractBudget) : 'N/A'}
+                      </div>
+                      <div className="text-sm text-muted-foreground">Agency Contract Budget</div>
+                    </>
+                  )
+                })()}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Total Contract Outlays to Date */}
+          <Card className="shadow-card">
+            <CardContent className="flex items-center justify-center min-h-[280px] p-0">
+              <div className="flex flex-col items-center justify-center text-center space-y-2">
+                {(() => {
+                  // Calculate total amount spent from all expense categories (amount_spent is in full dollars)
+                  const totalAmountSpent = budgetBreakdown?.records 
+                    ? budgetBreakdown.records.reduce((sum, item) => sum + item.amount_spent, 0)
+                    : 0
+                  
+                  // Format currency for display
+                  const formatBudgetAmount = (amount: number): string => {
+                    if (amount >= 1000000000) {
+                      return `$${(amount / 1000000000).toFixed(2)}B`
+                    } else if (amount >= 1000000) {
+                      return `$${(amount / 1000000).toFixed(2)}M`
+                    } else if (amount >= 1000) {
+                      return `$${(amount / 1000).toFixed(2)}K`
+                    } else {
+                      return `$${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                    }
+                  }
+                  
+                  return (
+                    <>
+                      <div className="text-5xl font-bold text-primary">
+                        {totalAmountSpent > 0 ? formatBudgetAmount(totalAmountSpent) : '$0'}
+                      </div>
+                      <div className="text-sm text-muted-foreground">Total Contract Outlays to Date</div>
+                    </>
+                  )
+                })()}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* % of Total Contracts Budget Spent to Date */}
+          <Card className="shadow-card">
+            <CardContent className="flex items-center justify-center min-h-[280px] p-0">
+              <div className="flex flex-col items-center justify-center text-center space-y-4">
+                {(() => {
+                  // Get Total Contract Budget from hardcoded values (from contract.csv)
+                  const totalContractBudget = displayAgencyName ? (FY26_CONTRACTS_BUDGET[displayAgencyName] || 0) : 0
+                  
+                  // Calculate total amount spent from all expense categories
+                  const totalAmountSpent = budgetBreakdown?.records 
+                    ? budgetBreakdown.records.reduce((sum, item) => sum + item.amount_spent, 0)
+                    : 0
+                  
+                  // Calculate percentage
+                  const percentSpent = totalContractBudget > 0 
+                    ? (totalAmountSpent / totalContractBudget) * 100 
+                    : 0
+                  const percentRemaining = 100 - percentSpent
+                  
+                  return (
+                    <>
+                      <div className="relative">
+                        <PieChart width={180} height={180}>
+                          <Pie
+                            data={[
+                              { name: 'Spent', value: percentSpent },
+                              { name: 'Remaining', value: percentRemaining }
+                            ]}
+                            cx={90}
+                            cy={90}
+                            innerRadius={60}
+                            outerRadius={85}
+                            paddingAngle={2}
+                            dataKey="value"
+                          >
+                            <Cell fill="hsl(var(--primary))" />
+                            <Cell fill="hsl(var(--muted))" />
+                          </Pie>
+                        </PieChart>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-3xl font-bold text-foreground">
+                            {percentSpent.toFixed(1)}%
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-sm text-muted-foreground">% of Total Contracts Budget Spent to Date</div>
+                    </>
+                  )
+                })()}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        
         <Card className="shadow-card">
           <CardContent className="p-0">
-            <div className="text-sm text-muted-foreground italic p-4 border-b">
-              Dollars in Thousands
-            </div>
             <Table>
               <TableHeader>
                 <TableRow>
@@ -751,38 +793,35 @@ export function AgencyAnalysis({ agencyName, planId, selectedAgency = "", onAgen
                       )
                     })}
                     {/* Calculate and display totals */}
-                    {sortedRecords.length > 0 && (
-                      <TableRow className="border-t-2 font-bold">
-                        <TableCell className="font-bold">TOTAL</TableCell>
-                        <TableCell className="text-right font-bold">
-                          {formatToThousands(
-                            sortedRecords.reduce((sum, item) => sum + item.fy26_preliminary, 0)
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right font-bold">
-                          {formatNumber(
-                            sortedRecords.reduce((sum, item) => sum + item.number_of_contracts, 0)
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right font-bold">
-                          {formatToThousands(
-                            sortedRecords.reduce((sum, item) => sum + item.amount_spent, 0)
-                          )}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <div className="flex justify-center">
-                            <MiniDonutChart
-                              spent={formatToThousands(
-                                sortedRecords.reduce((sum, item) => sum + item.amount_spent, 0)
-                              )}
-                              total={formatToThousands(
-                                sortedRecords.reduce((sum, item) => sum + item.fy26_preliminary, 0)
-                              )}
-                            />
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    )}
+                    {sortedRecords.length > 0 && (() => {
+                      // Get FY26 Preliminary total from hardcoded values (from contract.csv)
+                      const totalFY26Preliminary = displayAgencyName ? (FY26_CONTRACTS_BUDGET[displayAgencyName] || 0) : 0
+                      const totalAmountSpent = sortedRecords.reduce((sum, item) => sum + item.amount_spent, 0)
+                      const totalNumberOfContracts = sortedRecords.reduce((sum, item) => sum + item.number_of_contracts, 0)
+                      
+                      return (
+                        <TableRow className="border-t-2 font-bold">
+                          <TableCell className="font-bold">TOTAL</TableCell>
+                          <TableCell className="text-right font-bold">
+                            {formatToThousands(totalFY26Preliminary)}
+                          </TableCell>
+                          <TableCell className="text-right font-bold">
+                            {formatNumber(totalNumberOfContracts)}
+                          </TableCell>
+                          <TableCell className="text-right font-bold">
+                            {formatToThousands(totalAmountSpent)}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <div className="flex justify-center">
+                              <MiniDonutChart
+                                spent={formatToThousands(totalAmountSpent)}
+                                total={formatToThousands(totalFY26Preliminary)}
+                              />
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })()}
                   </>
                 )}
               </TableBody>
