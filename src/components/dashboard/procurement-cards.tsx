@@ -6,9 +6,10 @@ import { Loader2 } from "lucide-react"
 
 interface ProcurementInfoCardsProps {
   planId?: string
+  onDataReceived?: (data: PlanIdSearchResponse) => void
 }
 
-export function ProcurementInfoCards({ planId }: ProcurementInfoCardsProps) {
+export function ProcurementInfoCards({ planId, onDataReceived }: ProcurementInfoCardsProps) {
   const [data, setData] = useState<PlanIdSearchResponse | null>(null)
   const [loading, setLoading] = useState(false)
   const { toast } = useToast()
@@ -25,6 +26,10 @@ export function ProcurementInfoCards({ planId }: ProcurementInfoCardsProps) {
         const result = await searchByPlanId(planId)
         console.log("API result:", result)
         setData(result)
+        // Notify parent component of the data
+        if (onDataReceived) {
+          onDataReceived(result)
+        }
       } catch (err) {
         console.error("API error:", err)
         toast({
@@ -38,7 +43,7 @@ export function ProcurementInfoCards({ planId }: ProcurementInfoCardsProps) {
     }
 
     fetchData()
-  }, [planId, toast])
+  }, [planId, toast, onDataReceived])
 
   const record = data?.records[0]
 

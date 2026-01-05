@@ -150,6 +150,11 @@ export function Filters({ onSearch }: { onSearch: (filters: ProcurementSearchFil
   }
 
   const handleUpdateAwards = async () => {
+    // Prevent duplicate calls
+    if (updateLoading) {
+      return
+    }
+    
     setUpdateLoading(true)
     try {
       const result = await updateAwardsData(20)
@@ -370,6 +375,7 @@ export function Filters({ onSearch }: { onSearch: (filters: ProcurementSearchFil
           </Button>
 
           <Button 
+            type="button"
             variant="outline" 
             className="w-full"
             onClick={handleUpdateAwards}

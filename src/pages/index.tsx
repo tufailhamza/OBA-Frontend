@@ -14,7 +14,7 @@ import { PlanIdInput } from "@/components/dashboard/plan-id-input"
 import { ContractSizeProcurementCards } from "@/components/dashboard/contract-size-procurement-cards"
 import { PredictedContractSize } from "@/components/dashboard/predicted-contract-size"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { type ProcurementSearchFilters, searchByPlanId } from "@/services/api"
+import { type ProcurementSearchFilters, type PlanIdSearchResponse } from "@/services/api"
 
 const Index = () => {
   const [searchFilters, setSearchFilters] = useState<ProcurementSearchFilters | undefined>(undefined)
@@ -26,21 +26,22 @@ const Index = () => {
     setSearchFilters(filters)
   }
 
-  const handlePlanIdSubmit = async (planId: string) => {
+  const handlePlanIdSubmit = (planId: string) => {
     console.log("Index: Received planId:", planId)
     setSelectedPlanId(planId)
     console.log("Index: Setting selectedPlanId to:", planId)
-    
-    // Fetch the agency name from the Contract Timing API response
-    try {
-      const response = await searchByPlanId(planId)
-      if (response.records && response.records.length > 0) {
-        const agencyName = response.records[0].Agency
+    // Agency name will be extracted from ProcurementInfoCards component's response
+    // to avoid duplicate API calls
+  }
+  
+  // Callback to extract agency name from ProcurementInfoCards data
+  const handlePlanIdDataReceived = (data: PlanIdSearchResponse) => {
+    if (data?.records && data.records.length > 0) {
+      const agencyName = data.records[0].Agency
+      if (agencyName !== selectedAgencyName) {
         setSelectedAgencyName(agencyName)
         console.log("Index: Setting selectedAgencyName to:", agencyName)
       }
-    } catch (error) {
-      console.error("Failed to fetch agency name:", error)
     }
   }
 
@@ -72,7 +73,7 @@ const Index = () => {
             
             <TabsContent value="contract-timing" className="space-y-6 mt-6">
               <PlanIdInput onPlanIdSubmit={handlePlanIdSubmit} />
-              <ProcurementInfoCards planId={selectedPlanId} />
+              <ProcurementInfoCards planId={selectedPlanId} onDataReceived={handlePlanIdDataReceived} />
               <PredictedTenderDate planId={selectedPlanId} />
               <ProbabilityDistributionChartTiming planId={selectedPlanId} />
               <ModelAccuracyStatsTiming />

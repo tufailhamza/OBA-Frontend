@@ -369,52 +369,67 @@ export const searchByPlanId = async (planId: string): Promise<PlanIdSearchRespon
     return cachedData;
   }
 
+  // Check if there's already a pending request for this planId (deduplication)
+  const pendingRequest = apiCache.getPendingRequest<PlanIdSearchResponse>(cacheKey);
+  if (pendingRequest) {
+    console.log("Reusing pending request for planId:", planId);
+    return pendingRequest;
+  }
+
   console.log("Making API request to:", `${API_BASE_URL}/api/v1/procurement-date/search-by-plan-id`);
   console.log("Request body:", JSON.stringify({ plan_id: planId }));
   
-  // First, let's test if we can reach the backend at all
-  try {
-    console.log("Testing backend connectivity...");
-    const healthCheck = await fetch(`${API_BASE_URL}/health`);
-    console.log("Health check status:", healthCheck.status);
-    console.log("Health check ok:", healthCheck.ok);
-  } catch (healthError) {
-    console.error("Backend health check failed:", healthError);
-    throw new Error(`Cannot reach backend server at ${API_BASE_URL}. Please ensure the backend is running.`);
-  }
-  
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/v1/procurement-date/search-by-plan-id`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ plan_id: planId }),
-    });
-    
-    console.log("Response status:", response.status);
-    console.log("Response ok:", response.ok);
-    
-    if (!response.ok) {
-      let errorMessage = `HTTP error! status: ${response.status}`;
-      try {
-        const errorData = await response.json();
-        errorMessage = errorData.detail || errorMessage;
-      } catch (e) {
-        // If we can't parse the error response, use the status
-      }
-      throw new Error(errorMessage);
+  // Create the request promise
+  const requestPromise = (async () => {
+    // First, let's test if we can reach the backend at all
+    try {
+      console.log("Testing backend connectivity...");
+      const healthCheck = await fetch(`${API_BASE_URL}/health`);
+      console.log("Health check status:", healthCheck.status);
+      console.log("Health check ok:", healthCheck.ok);
+    } catch (healthError) {
+      console.error("Backend health check failed:", healthError);
+      throw new Error(`Cannot reach backend server at ${API_BASE_URL}. Please ensure the backend is running.`);
     }
     
-    const data = await response.json();
-    console.log("Response data:", data);
-    
-    // Cache the response
-    apiCache.set(cacheKey, data);
-    
-    return data;
-  } catch (error) {
-    console.error("Fetch error:", error);
-    throw error;
-  }
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/procurement-date/search-by-plan-id`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan_id: planId }),
+      });
+      
+      console.log("Response status:", response.status);
+      console.log("Response ok:", response.ok);
+      
+      if (!response.ok) {
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.detail || errorMessage;
+        } catch (e) {
+          // If we can't parse the error response, use the status
+        }
+        throw new Error(errorMessage);
+      }
+      
+      const data = await response.json();
+      console.log("Response data:", data);
+      
+      // Cache the response
+      apiCache.set(cacheKey, data);
+      
+      return data;
+    } catch (error) {
+      console.error("Fetch error:", error);
+      throw error;
+    }
+  })();
+
+  // Store the pending request for deduplication
+  apiCache.setPendingRequest(cacheKey, requestPromise);
+  
+  return requestPromise;
 };
 
 export const searchByContractSizePlanId = async (planId: string): Promise<ContractSizeSearchResponse> => {
@@ -427,41 +442,56 @@ export const searchByContractSizePlanId = async (planId: string): Promise<Contra
     return cachedData;
   }
 
+  // Check if there's already a pending request for this planId (deduplication)
+  const pendingRequest = apiCache.getPendingRequest<ContractSizeSearchResponse>(cacheKey);
+  if (pendingRequest) {
+    console.log("Reusing pending contract size request for planId:", planId);
+    return pendingRequest;
+  }
+
   console.log("Making Contract Size API request to:", `${API_BASE_URL}/api/v1/contract-size/search-by-plan-id`);
   console.log("Request body:", JSON.stringify({ plan_id: planId }));
   
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/v1/contract-size/search-by-plan-id`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ plan_id: planId }),
-    });
-    
-    console.log("Contract Size response status:", response.status);
-    console.log("Contract Size response ok:", response.ok);
-    
-    if (!response.ok) {
-      let errorMessage = `HTTP error! status: ${response.status}`;
-      try {
-        const errorData = await response.json();
-        errorMessage = errorData.detail || errorMessage;
-      } catch (e) {
-        // If we can't parse the error response, use the status
+  // Create the request promise
+  const requestPromise = (async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/contract-size/search-by-plan-id`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan_id: planId }),
+      });
+      
+      console.log("Contract Size response status:", response.status);
+      console.log("Contract Size response ok:", response.ok);
+      
+      if (!response.ok) {
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.detail || errorMessage;
+        } catch (e) {
+          // If we can't parse the error response, use the status
+        }
+        throw new Error(errorMessage);
       }
-      throw new Error(errorMessage);
+      
+      const data = await response.json();
+      console.log("Contract Size response data:", data);
+      
+      // Cache the response
+      apiCache.set(cacheKey, data);
+      
+      return data;
+    } catch (error) {
+      console.error("Contract Size fetch error:", error);
+      throw error;
     }
-    
-    const data = await response.json();
-    console.log("Contract Size response data:", data);
-    
-    // Cache the response
-    apiCache.set(cacheKey, data);
-    
-    return data;
-  } catch (error) {
-    console.error("Contract Size fetch error:", error);
-    throw error;
-  }
+  })();
+
+  // Store the pending request for deduplication
+  apiCache.setPendingRequest(cacheKey, requestPromise);
+  
+  return requestPromise;
 };
 
 export const searchByCompetitorPlanId = async (planId: string): Promise<CompetitorAnalysisSearchResponse> => {
@@ -474,41 +504,56 @@ export const searchByCompetitorPlanId = async (planId: string): Promise<Competit
     return cachedData;
   }
 
+  // Check if there's already a pending request for this planId (deduplication)
+  const pendingRequest = apiCache.getPendingRequest<CompetitorAnalysisSearchResponse>(cacheKey);
+  if (pendingRequest) {
+    console.log("Reusing pending competitor request for planId:", planId);
+    return pendingRequest;
+  }
+
   console.log("Making Competitor Analysis API request to:", `${API_BASE_URL}/api/v1/competitor-analysis/search-by-plan-id`);
   console.log("Request body:", JSON.stringify({ plan_id: planId }));
   
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/v1/competitor-analysis/search-by-plan-id`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ plan_id: planId }),
-    });
-    
-    console.log("Competitor Analysis response status:", response.status);
-    console.log("Competitor Analysis response ok:", response.ok);
-    
-    if (!response.ok) {
-      let errorMessage = `HTTP error! status: ${response.status}`;
-      try {
-        const errorData = await response.json();
-        errorMessage = errorData.detail || errorMessage;
-      } catch (e) {
-        // If we can't parse the error response, use the status
+  // Create the request promise
+  const requestPromise = (async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/competitor-analysis/search-by-plan-id`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan_id: planId }),
+      });
+      
+      console.log("Competitor Analysis response status:", response.status);
+      console.log("Competitor Analysis response ok:", response.ok);
+      
+      if (!response.ok) {
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.detail || errorMessage;
+        } catch (e) {
+          // If we can't parse the error response, use the status
+        }
+        throw new Error(errorMessage);
       }
-      throw new Error(errorMessage);
+      
+      const data = await response.json();
+      console.log("Competitor Analysis response data:", data);
+      
+      // Cache the response
+      apiCache.set(cacheKey, data);
+      
+      return data;
+    } catch (error) {
+      console.error("Competitor Analysis fetch error:", error);
+      throw error;
     }
-    
-    const data = await response.json();
-    console.log("Competitor Analysis response data:", data);
-    
-    // Cache the response
-    apiCache.set(cacheKey, data);
-    
-    return data;
-  } catch (error) {
-    console.error("Competitor Analysis fetch error:", error);
-    throw error;
-  }
+  })();
+
+  // Store the pending request for deduplication
+  apiCache.setPendingRequest(cacheKey, requestPromise);
+  
+  return requestPromise;
 };
 
 export const searchByAgencyName = async (agencyName: string): Promise<AgencyAnalysisResponse> => {

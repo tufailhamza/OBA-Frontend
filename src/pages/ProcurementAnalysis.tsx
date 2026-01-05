@@ -3,12 +3,14 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { ArrowLeft, Loader2 } from "lucide-react"
-import { ProbabilityDistributionChartTiming } from "@/components/dashboard/prediction-chart-timing"
-import { ProbabilityDistributionChartSize } from "@/components/dashboard/prediction-chart-size"
-import { ModelAccuracyStatsTiming } from "@/components/dashboard/model-accuracy-timing"
-import { ModelAccuracyStatsSize } from "@/components/dashboard/model-accuracy-size"
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense, lazy } from "react"
 import { useToast } from "@/hooks/use-toast"
+
+// Lazy load heavy components
+const ProbabilityDistributionChartTiming = lazy(() => import("@/components/dashboard/prediction-chart-timing").then(module => ({ default: module.ProbabilityDistributionChartTiming })))
+const ProbabilityDistributionChartSize = lazy(() => import("@/components/dashboard/prediction-chart-size").then(module => ({ default: module.ProbabilityDistributionChartSize })))
+const ModelAccuracyStatsTiming = lazy(() => import("@/components/dashboard/model-accuracy-timing").then(module => ({ default: module.ModelAccuracyStatsTiming })))
+const ModelAccuracyStatsSize = lazy(() => import("@/components/dashboard/model-accuracy-size").then(module => ({ default: module.ModelAccuracyStatsSize })))
 import { 
   searchByPlanId, 
   searchByContractSizePlanId, 
@@ -213,10 +215,32 @@ export default function ProcurementAnalysis() {
         </Card>
 
         {/* Contract Size Probability Distribution Chart */}
-        <ProbabilityDistributionChartSize planId={planId} />
+        <Suspense fallback={
+          <Card className="mb-6">
+            <CardContent className="p-8">
+              <div className="flex items-center justify-center">
+                <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                <span>Loading contract size chart...</span>
+              </div>
+            </CardContent>
+          </Card>
+        }>
+          <ProbabilityDistributionChartSize planId={planId} />
+        </Suspense>
 
         {/* Contract Size Model Accuracy Statistics */}
-        <ModelAccuracyStatsSize />
+        <Suspense fallback={
+          <Card className="mb-6">
+            <CardContent className="p-8">
+              <div className="flex items-center justify-center">
+                <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                <span>Loading model accuracy stats...</span>
+              </div>
+            </CardContent>
+          </Card>
+        }>
+          <ModelAccuracyStatsSize />
+        </Suspense>
 
         {/* Predicted Tender Date */}
         <Card className="gradient-card shadow-card hover:shadow-hover transition-smooth mb-6">
@@ -241,10 +265,32 @@ export default function ProcurementAnalysis() {
         </Card>
 
         {/* Contract Timing Probability Distribution Chart */}
-        <ProbabilityDistributionChartTiming planId={planId} />
+        <Suspense fallback={
+          <Card className="mb-6">
+            <CardContent className="p-8">
+              <div className="flex items-center justify-center">
+                <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                <span>Loading contract timing chart...</span>
+              </div>
+            </CardContent>
+          </Card>
+        }>
+          <ProbabilityDistributionChartTiming planId={planId} />
+        </Suspense>
 
         {/* Contract Timing Model Accuracy Statistics */}
-        <ModelAccuracyStatsTiming />
+        <Suspense fallback={
+          <Card className="mb-6">
+            <CardContent className="p-8">
+              <div className="flex items-center justify-center">
+                <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                <span>Loading model accuracy stats...</span>
+              </div>
+            </CardContent>
+          </Card>
+        }>
+          <ModelAccuracyStatsTiming />
+        </Suspense>
 
         {/* Competitor Analysis */}
         <Card className="gradient-card shadow-card hover:shadow-hover transition-smooth">
